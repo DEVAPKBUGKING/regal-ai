@@ -3,27 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REGAL AI — v4</title>
+<title>REGAL AI — local model</title>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --panel: #12121a;
-    --panel2: #1a1a26;
-    --border: #2a2a3a;
-    --accent: #ff2c8c;
-    --accent2: #b300ff;
-    --text: #e8e8f0;
-    --dim: #8a8a9a;
-    --code: #0d1117;
-    --ok: #00ff88;
-    --warn: #ffb020;
-    --err: #ff2c2c;
+    --bg: #0a0a0f; --panel: #12121a; --panel2: #1a1a26;
+    --border: #2a2a3a; --accent: #ff2c8c; --accent2: #b300ff;
+    --text: #e8e8f0; --dim: #8a8a9a; --code: #0d1117;
+    --ok: #00ff88; --warn: #ffb020; --err: #ff2c2c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
   body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     display: flex; flex-direction: column;
   }
@@ -60,8 +51,7 @@
   .hdr-btn:hover { color: var(--text); border-color: var(--accent); }
 
   #loader {
-    position: fixed; inset: 0;
-    background: var(--bg);
+    position: fixed; inset: 0; background: var(--bg);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     z-index: 999; transition: opacity .4s;
@@ -76,94 +66,55 @@
   }
   .load-sub { font-size: 12px; color: var(--dim); margin-bottom: 18px; text-align: center; line-height: 1.6; }
 
-  /* model picker — dua baris: dropdown + tombol */
-  .model-picker {
-    display: flex; gap: 8px; align-items: center;
-    margin-bottom: 14px; max-width: 480px; width: 100%;
-    flex-wrap: wrap; justify-content: center;
+  .path-input {
+    display: flex; gap: 8px; margin-bottom: 14px;
+    max-width: 520px; width: 100%; flex-wrap: wrap;
   }
-  .model-picker label { font-size: 11px; color: var(--dim); }
-  .model-picker select {
-    flex: 1; min-width: 220px;
+  .path-input input {
+    flex: 1; min-width: 200px;
     background: var(--panel2); color: var(--text);
     border: 1px solid var(--border); border-radius: 8px;
-    padding: 8px 10px; font-family: inherit; font-size: 12px;
-    outline: none; cursor: pointer;
+    padding: 9px 12px; font-family: inherit; font-size: 12px;
+    outline: none;
   }
-  .model-picker select:disabled { opacity: .5; cursor: not-allowed; }
-  .model-picker select:focus { border-color: var(--accent); }
+  .path-input input:focus { border-color: var(--accent); }
+  .path-input button {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 8px;
+    padding: 0 16px; font-family: inherit; font-weight: 700;
+    font-size: 12px; cursor: pointer;
+  }
+  .path-input button:hover { opacity: .9; }
 
   .progress {
     width: 340px; max-width: 80vw; height: 8px;
     background: var(--panel2); border-radius: 4px; overflow: hidden;
     margin-bottom: 10px;
-    position: relative;
   }
   .progress > div {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
     transition: width .2s;
   }
-  .progress .stripes {
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(
-      45deg,
-      transparent 0 10px,
-      rgba(255,255,255,.05) 10px 20px
-    );
-    animation: slide 1s linear infinite;
-    display: none;
-  }
-  .progress.active .stripes { display: block; }
-  @keyframes slide { from{background-position:0 0} to{background-position:20px 0} }
-
-  .load-info { font-size: 11px; color: var(--dim); min-height: 16px; font-family: monospace; text-align: center; max-width: 90vw; word-break: break-all; }
+  .load-info { font-size: 11px; color: var(--dim); min-height: 16px; font-family: monospace; text-align: center; }
   .load-note {
     font-size: 10px; color: var(--dim);
-    margin-top: 18px; max-width: 460px;
+    margin-top: 18px; max-width: 480px;
     text-align: center; line-height: 1.7; opacity: .8;
-  }
-
-  /* tombol control */
-  .load-controls {
-    display: flex; gap: 8px; margin-top: 14px;
-    flex-wrap: wrap; justify-content: center;
   }
   .loader-btn {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; border: none; border-radius: 10px;
     padding: 11px 24px; font-family: inherit; font-weight: 700;
     letter-spacing: 1px; cursor: pointer; font-size: 13px;
-    transition: transform .1s, opacity .15s;
+    margin-top: 14px;
   }
-  .loader-btn:hover:not(:disabled) { opacity: .9; }
-  .loader-btn:active:not(:disabled) { transform: scale(.97); }
   .loader-btn:disabled { opacity: .4; cursor: not-allowed; }
   .loader-btn.ghost {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    font-weight: 400;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--dim); font-weight: 400;
   }
-  .loader-btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
-  .loader-btn.danger {
-    background: transparent;
-    border: 1px solid var(--err);
-    color: var(--err);
-    font-weight: 600;
-  }
-  .loader-btn.danger:hover:not(:disabled) { background: rgba(255,44,44,.1); }
 
-  /* speed / eta bar */
-  .load-stats {
-    display: flex; gap: 16px; justify-content: center;
-    font-size: 10px; color: var(--dim);
-    margin-top: 6px; font-family: monospace;
-    flex-wrap: wrap;
-  }
-  .load-stats b { color: var(--text); font-weight: 500; }
-
-  /* cache panel */
   .cache-panel {
     margin-top: 16px; padding: 10px 14px;
     background: var(--panel); border: 1px solid var(--border);
@@ -177,7 +128,6 @@
   .cache-panel .row b { color: var(--text); font-weight: 500; text-align: right; word-break: break-all; }
   .cache-panel .row .ok { color: var(--ok); }
   .cache-panel .row .no { color: var(--err); }
-  .cache-panel .row .warn { color: var(--warn); }
 
   #chat {
     flex: 1; overflow-y: auto; padding: 18px;
@@ -186,7 +136,6 @@
   #chat::-webkit-scrollbar { width: 8px; }
   #chat::-webkit-scrollbar-track { background: var(--bg); }
   #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
   .msg {
     max-width: 88%; padding: 12px 16px;
     border-radius: 14px; line-height: 1.6; font-size: 13.5px;
@@ -197,30 +146,23 @@
   .msg.user {
     align-self: flex-end;
     background: linear-gradient(135deg, #2a1a3a, #3a1a4a);
-    border: 1px solid #4a2a5a;
-    border-bottom-right-radius: 4px;
+    border: 1px solid #4a2a5a; border-bottom-right-radius: 4px;
   }
   .msg.ai {
     align-self: flex-start;
     background: linear-gradient(135deg, #16202a, #1a2a3a);
-    border: 1px solid #2a3a4a;
-    border-bottom-left-radius: 4px;
+    border: 1px solid #2a3a4a; border-bottom-left-radius: 4px;
     max-width: 92%;
   }
   .msg.ai .md { white-space: normal; }
-  .msg.ai .md p { margin: 6px 0; }
   .msg.ai .md pre {
     background: var(--code); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px; overflow-x: auto;
-    margin: 8px 0; font-size: 12px; line-height: 1.5;
+    margin: 8px 0; font-size: 12px;
   }
-  .msg.ai .md code.inline {
-    background: var(--code); padding: 1px 5px;
-    border-radius: 4px; font-size: 12px;
-  }
+  .msg.ai .md code.inline { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
   .msg.ai .md h1, .msg.ai .md h2, .msg.ai .md h3 { margin: 10px 0 6px; color: #ffb3d9; }
   .msg.ai .md ul, .msg.ai .md ol { margin: 6px 0 6px 22px; }
-  .msg.ai .md li { margin: 3px 0; }
   .msg.ai .md strong { color: #ffb3d9; }
   .msg .meta { display: flex; gap: 8px; margin-top: 4px; }
   .msg .meta button {
@@ -237,10 +179,8 @@
   @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
   footer {
-    padding: 12px 16px 14px;
-    background: var(--panel);
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
+    padding: 12px 16px 14px; background: var(--panel);
+    border-top: 1px solid var(--border); flex-shrink: 0;
   }
   .input-row { display: flex; gap: 8px; align-items: flex-end; }
   textarea {
@@ -249,7 +189,6 @@
     padding: 12px 14px; color: var(--text);
     font-family: inherit; font-size: 14px; resize: none;
     max-height: 160px; outline: none;
-    transition: border-color .15s;
   }
   textarea:focus { border-color: var(--accent); }
   button.primary {
@@ -257,48 +196,13 @@
     color: #fff; border: none; border-radius: 12px;
     padding: 0 20px; height: 44px;
     font-family: inherit; font-weight: 700;
-    font-size: 13px; letter-spacing: .5px;
-    cursor: pointer; transition: transform .1s, opacity .15s;
+    font-size: 13px; cursor: pointer;
   }
   button.primary:hover { opacity: .9; }
-  button.primary:active { transform: scale(.97); }
   button.primary:disabled { opacity: .4; cursor: not-allowed; }
   .hint { font-size: 10px; color: var(--dim); margin-top: 6px; text-align: center; }
   .hint kbd { background: var(--panel2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-family: inherit; }
   .hint b { color: var(--accent); }
-
-  #settings {
-    position: fixed; inset: 0; background: rgba(0,0,0,.7);
-    display: none; align-items: center; justify-content: center; z-index: 1000;
-    padding: 20px;
-  }
-  #settings.show { display: flex; }
-  .modal {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 14px; padding: 20px;
-    max-width: 500px; width: 100%;
-    max-height: 85vh; overflow-y: auto;
-  }
-  .modal h2 { font-size: 14px; margin-bottom: 14px; letter-spacing: 1px; color: var(--accent); }
-  .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 6px; }
-  .field input, .field textarea {
-    width: 100%; background: var(--panel2);
-    border: 1px solid var(--border); color: var(--text);
-    border-radius: 8px; padding: 8px 10px;
-    font-family: inherit; font-size: 12px; outline: none;
-    resize: vertical;
-  }
-  .field textarea { min-height: 100px; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; }
-  .modal-actions button {
-    border: 1px solid var(--border); background: transparent;
-    color: var(--text); padding: 8px 14px;
-    border-radius: 8px; cursor: pointer;
-    font-family: inherit; font-size: 12px;
-  }
-  .modal-actions button.primary { border: none; }
-  .modal-actions button.danger { color: var(--err); border-color: var(--err); }
 </style>
 </head>
 <body>
@@ -306,41 +210,32 @@
 <div id="loader">
   <div class="load-title">REGAL</div>
   <div class="load-sub">
-    on-device chat model · no api · no server<br>
-    <span style="color:#ff2c8c">v4 — stop download + ganti model kapan aja</span>
+    local model loader<br>
+    <span style="color:#ff2c8c">taruh folder model di hp, load dari sini. gak ada download, gak ada refresh reset.</span>
   </div>
 
-  <div class="model-picker">
-    <label>model:</label>
-    <select id="modelSelect"></select>
-    <button class="loader-btn ghost" id="switchBtn" style="display:none; padding: 8px 14px; font-size: 11px;">GANTI MODEL</button>
+  <div class="path-input">
+    <input id="modelPath" type="text" placeholder="path model (contoh: /regal-model/qwen2.5-0.5b)" value="">
+    <button onclick="loadFromPath()">LOAD</button>
   </div>
 
-  <div class="progress" id="progWrap"><div id="bar"></div><div class="stripes"></div></div>
-  <div class="load-info" id="info">mengecek cache...</div>
-  <div class="load-stats">
-    <span>speed: <b id="sSpeed">—</b></span>
-    <span>eta: <b id="sEta">—</b></span>
-    <span>file: <b id="sFile">—</b></span>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="load-info" id="info">masukkan path folder model di atas.</div>
+
+  <div class="cache-panel">
+    <div class="row"><span>Status</span><b id="cStatus">—</b></div>
+    <div class="row"><span>File terdeteksi</span><b id="cFiles">—</b></div>
   </div>
 
-  <div class="load-controls">
-    <button class="loader-btn" id="startBtn" disabled>MEMERIKSA...</button>
-    <button class="loader-btn danger" id="cancelBtn" style="display:none;">BATAL DOWNLOAD</button>
-  </div>
-
-  <div class="cache-panel" id="cachePanel">
-    <div class="row"><span>Storage persistent</span><b id="cPersist">—</b></div>
-    <div class="row"><span>Model di cache</span><b id="cModel">—</b></div>
-    <div class="row"><span>Cache size</span><b id="cSize">—</b></div>
-    <div class="row"><span>Last loaded</span><b id="cLast">—</b></div>
-  </div>
+  <button class="loader-btn ghost" onclick="useDefault()">PAKAI PATH DEFAULT</button>
+  <button class="loader-btn" onclick="diagnose()">CEK FOLDER</button>
 
   <div class="load-note">
-    <b style="color:#ff2c8c">Qwen2.5-0.5B</b> = 400MB · <b>Qwen2.5-1.5B</b> = 1.2GB<br>
-    <b>Llama-3.2-1B</b> = 900MB · <b>Llama-3.2-3B</b> = 2GB<br>
-    <b style="color:var(--ok)">bisa stop di tengah & ganti model kapan aja.</b><br>
-    progress model yang udah ke-download tetep disimpen — balik ke model itu bakal resume.
+    <b>path bisa relative atau absolute.</b><br>
+    kalau lu taruh folder model di sebelah html ini, tinggal tulis:<br>
+    <code style="color:#ff2c8c">./regal-model/qwen2.5-0.5b</code><br>
+    kalau di root folder web server: <code style="color:#ff2c8c">/regal-model/qwen2.5-0.5b</code><br>
+    <b style="color:var(--ok)">gak ada download. gak ada cache IDB. file lu ada di disk.</b>
   </div>
 </div>
 
@@ -349,7 +244,6 @@
   <div class="logo">REGAL</div>
   <div class="status" id="status">otak: <b>—</b></div>
   <div class="spacer"></div>
-  <button class="hdr-btn" onclick="showSettings()">⚙ settings</button>
   <button class="hdr-btn" onclick="clearChat()">clear</button>
 </header>
 
@@ -357,53 +251,18 @@
 
 <footer>
   <div class="input-row">
-    <textarea id="in" rows="1" placeholder="tulis pesan... (shift+enter = newline)"></textarea>
+    <textarea id="in" rows="1" placeholder="tulis pesan..."></textarea>
     <button class="primary" id="sendBtn" onclick="send()">KIRIM</button>
   </div>
-  <div class="hint">
-    <kbd>enter</kbd> kirim · <kbd>shift+enter</kbd> baris baru ·
-    <b>stop</b> kalau mau berhenti
-  </div>
+  <div class="hint"><kbd>enter</kbd> kirim · <kbd>shift+enter</kbd> baris baru</div>
 </footer>
-
-<div id="settings">
-  <div class="modal">
-    <h2>SETTINGS</h2>
-    <div class="field">
-      <label>System prompt</label>
-      <textarea id="sysPrompt"></textarea>
-    </div>
-    <div class="field">
-      <label>Temperature (0.0-2.0)</label>
-      <input id="temp" type="number" step="0.05" min="0" max="2">
-    </div>
-    <div class="field">
-      <label>Top P (0.0-1.0)</label>
-      <input id="topp" type="number" step="0.05" min="0" max="1">
-    </div>
-    <div class="field">
-      <label>Repetition penalty (1.0-2.0)</label>
-      <input id="rep" type="number" step="0.05" min="1" max="2">
-    </div>
-    <div class="field">
-      <label>Max new tokens</label>
-      <input id="maxTok" type="number" step="64" min="64" max="4096">
-    </div>
-    <div class="modal-actions">
-      <button class="danger" onclick="clearAllCache()">HAPUS SEMUA CACHE</button>
-      <button onclick="hideSettings()">BATAL</button>
-      <button class="primary" onclick="saveSettings()">SIMPAN</button>
-    </div>
-  </div>
-</div>
 
 <script type="module">
 // ═══════════════════════════════════════════════════════════════
-//  REGAL AI v4 — download control + model switch
-//  - stop download di tengah (abort controller)
-//  - ganti model kapan aja (bahkan saat download)
-//  - resume progress per model (transformers.js cache handle ini)
-//  - speed + ETA
+//  REGAL AI — local model loader
+//  - load model dari folder lokal, bukan dari internet
+//  - gak ada download, gak ada IndexedDB cache
+//  - progress reset hanya kalau lu refresh (dan itu pun cuma baca disk)
 // ═══════════════════════════════════════════════════════════════
 
 import {
@@ -413,24 +272,24 @@ import {
   env,
 } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
 
-env.allowLocalModels = false;
-env.useBrowserCache = true;
+// KRUSIAL: matiin remote model, aktifin local model
+env.allowRemoteModels = false;
+env.allowLocalModels = true;
 
-const MODELS = {
-  'Qwen2.5-0.5B-Instruct (~400MB)':  'onnx-community/Qwen2.5-0.5B-Instruct',
-  'Qwen2.5-1.5B-Instruct (~1.2GB)':  'onnx-community/Qwen2.5-1.5B-Instruct',
-  'Llama-3.2-1B-Instruct (~900MB)':  'onnx-community/Llama-3.2-1B-Instruct',
-  'Llama-3.2-3B-Instruct (~2GB)':    'onnx-community/Llama-3.2-3B-Instruct',
-};
-const DEFAULT_KEY = 'Qwen2.5-0.5B-Instruct (~400MB)';
-const STORAGE_KEY = 'regal_ai_state_v4';
+// path default — sesuaikan sama lokasi lu
+let currentPath = '';
 
-const DEFAULT_SYS = `Kamu adalah Regal, asisten AI santai, jujur, to the point.
-- Jawab dalam bahasa yang sama dengan user (indo -> indo).
-- Gak usah basa-basi berlebihan.
-- Kalau diminta code, tulis lengkap & runnable.
-- Kalau gak tau, bilang gak tau.
-- Boleh markdown (##, **bold**, \`code\`).`;
+const chatEl = document.getElementById('chat');
+const inEl = document.getElementById('in');
+const sendBtn = document.getElementById('sendBtn');
+const dot = document.getElementById('dot');
+const statusEl = document.getElementById('status');
+const loader = document.getElementById('loader');
+const bar = document.getElementById('bar');
+const info = document.getElementById('info');
+const modelPathInput = document.getElementById('modelPath');
+const cStatus = document.getElementById('cStatus');
+const cFiles = document.getElementById('cFiles');
 
 let tokenizer = null;
 let model = null;
@@ -440,118 +299,18 @@ let generating = false;
 let stopFlag = false;
 let chatHistory = [];
 
-// ── download control ──
-let downloadAbort = null;         // AbortController buat stop
-let downloadedBytes = 0;
-let lastProgressTime = 0;
-let lastProgressBytes = 0;
-let currentSpeed = 0;             // bytes/sec
-let aborted = false;
-
-const chatEl  = document.getElementById('chat');
-const inEl    = document.getElementById('in');
-const sendBtn = document.getElementById('sendBtn');
-const dot     = document.getElementById('dot');
-const statusEl= document.getElementById('status');
-const loader  = document.getElementById('loader');
-const bar     = document.getElementById('bar');
-const progWrap= document.getElementById('progWrap');
-const info    = document.getElementById('info');
-const startBtn= document.getElementById('startBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const switchBtn = document.getElementById('switchBtn');
-const modelSel= document.getElementById('modelSelect');
-const cPersist= document.getElementById('cPersist');
-const cModel  = document.getElementById('cModel');
-const cSize   = document.getElementById('cSize');
-const cLast   = document.getElementById('cLast');
-const sSpeed  = document.getElementById('sSpeed');
-const sEta    = document.getElementById('sEta');
-const sFile   = document.getElementById('sFile');
-
-// ── state persist ──
-function loadState() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-  catch { return {}; }
-}
-function saveState(patch) {
-  const s = loadState();
-  Object.assign(s, patch, { updatedAt: Date.now() });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-}
-
-// ── isi dropdown ──
-for (const label of Object.keys(MODELS)) {
-  const o = document.createElement('option');
-  o.value = label; o.textContent = label;
-  modelSel.appendChild(o);
-}
-modelSel.value = loadState().modelKey || DEFAULT_KEY;
-
-// ── settings ──
-const st = loadState();
-const settings = {
-  sys: st.sys || DEFAULT_SYS,
-  temp: st.temp ?? 0.7,
-  topp: st.topp ?? 0.9,
-  rep: st.rep ?? 1.15,
-  maxTok: st.maxTok ?? 1024,
-};
-function showSettings() {
-  document.getElementById('sysPrompt').value = settings.sys;
-  document.getElementById('temp').value = settings.temp;
-  document.getElementById('topp').value = settings.topp;
-  document.getElementById('rep').value = settings.rep;
-  document.getElementById('maxTok').value = settings.maxTok;
-  document.getElementById('settings').classList.add('show');
-}
-function hideSettings() { document.getElementById('settings').classList.remove('show'); }
-function saveSettings() {
-  settings.sys = document.getElementById('sysPrompt').value;
-  settings.temp = parseFloat(document.getElementById('temp').value);
-  settings.topp = parseFloat(document.getElementById('topp').value);
-  settings.rep = parseFloat(document.getElementById('rep').value);
-  settings.maxTok = parseInt(document.getElementById('maxTok').value);
-  saveState({ sys: settings.sys, temp: settings.temp, topp: settings.topp, rep: settings.rep, maxTok: settings.maxTok });
-  hideSettings();
-}
-async function clearAllCache() {
-  if (!confirm('Hapus semua cache model + state?')) return;
-  try {
-    const keys = await caches.keys();
-    for (const k of keys) await caches.delete(k);
-    const dbs = (await indexedDB.databases?.()) || [];
-    for (const db of dbs) {
-      if (db.name && (db.name.includes('transformers') || db.name.includes('onnx'))) {
-        indexedDB.deleteDatabase(db.name);
-      }
-    }
-    localStorage.removeItem(STORAGE_KEY);
-    alert('cache dibersihkan. reload halaman.');
-    location.reload();
-  } catch (e) {
-    alert('gagal clear: ' + e.message);
-  }
-}
-window.showSettings = showSettings;
-window.hideSettings = hideSettings;
-window.saveSettings = saveSettings;
-window.clearAllCache = clearAllCache;
-
 // ── util ──
 function now() {
   const d = new Date();
   return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function mdToHtml(s) {
   s = esc(s);
   const blocks = [];
   s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
     const i = blocks.length;
-    blocks.push(`<pre><code class="lang-${lang||'text'}">${code.replace(/^\n|\n$/g,'')}</code></pre>`);
+    blocks.push(`<pre><code>${code.replace(/^\n|\n$/g,'')}</code></pre>`);
     return `\u0000B${i}\u0000`;
   });
   s = s.replace(/`([^`\n]+)`/g, '<code class="inline">$1</code>');
@@ -559,7 +318,7 @@ function mdToHtml(s) {
   s = s.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
   s = s.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*([^*]+)\*/g,     '<em>$1</em>');
+  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   s = s.replace(/^- (.+)$/gm, '<li>$1</li>');
   s = s.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
   s = s.replace(/\u0000B(\d+)\u0000/g, (m, i) => blocks[parseInt(i)]);
@@ -576,11 +335,8 @@ function addMsg(role, text, opts = {}) {
   meta.innerHTML = `<span>${now()}</span>`;
   if (opts.copy) {
     const b = document.createElement('button'); b.textContent = 'copy';
-    b.onclick = () => navigator.clipboard.writeText(text); meta.appendChild(b);
-  }
-  if (opts.regen) {
-    const b = document.createElement('button'); b.textContent = 'regenerate';
-    b.onclick = () => regenerate(); meta.appendChild(b);
+    b.onclick = () => navigator.clipboard.writeText(text);
+    meta.appendChild(b);
   }
   div.appendChild(meta);
   chatEl.appendChild(div);
@@ -597,307 +353,108 @@ function detectDevice() {
   return 'wasm';
 }
 
-// ── cache detection ──
-async function isModelCached(repoId) {
-  try {
-    const keys = await caches.keys();
-    for (const k of keys) {
-      const cache = await caches.open(k);
-      const reqs = await cache.keys();
-      for (const r of reqs) {
-        if (r.url.includes(repoId)) return true;
-      }
-    }
-  } catch (e) {}
-  const s = loadState();
-  return s.lastModelRepo === repoId && s.lastLoadSuccess;
-}
-async function getCacheInfo() {
-  try {
-    if (navigator.storage?.estimate) {
-      const est = await navigator.storage.estimate();
-      return est;
-    }
-  } catch (e) {}
-  return null;
-}
-async function refreshCachePanel() {
-  let persisted = false;
-  try {
-    if (navigator.storage?.persisted) persisted = await navigator.storage.persisted();
-  } catch (e) {}
-  cPersist.textContent = persisted ? '✓ granted' : '✗ not granted';
-  cPersist.className = persisted ? 'ok' : 'warn';
+// ── cek folder model ──
+async function diagnose() {
+  const base = (modelPathInput.value || currentPath || './regal-model/qwen2.5-0.5b').replace(/\/+$/, '');
+  cStatus.textContent = 'cek...';
+  cFiles.textContent = '...';
 
-  const repoId = MODELS[modelSel.value];
-  const cached = await isModelCached(repoId);
-  cModel.textContent = cached ? `✓ ${repoId}` : '✗ belum';
-  cModel.className = cached ? 'ok' : 'no';
+  const files = [
+    'config.json',
+    'generation_config.json',
+    'tokenizer.json',
+    'tokenizer_config.json',
+    'onnx/model_q4.onnx',
+  ];
 
-  const ci = await getCacheInfo();
-  if (ci && ci.usage) {
-    cSize.textContent = `${(ci.usage/1e6).toFixed(1)} MB / ${(ci.quota/1e6/1000).toFixed(1)} GB`;
+  const found = [];
+  const missing = [];
+
+  for (const f of files) {
+    try {
+      const r = await fetch(base + '/' + f, { method: 'HEAD' });
+      if (r.ok) found.push(f);
+      else missing.push(f + ` (${r.status})`);
+    } catch (e) {
+      missing.push(f + ' (err)');
+    }
+  }
+
+  if (missing.length === 0) {
+    cStatus.innerHTML = '<span class="ok">✓ semua file ada</span>';
+    info.textContent = `siap. ${found.length} file ditemukan di ${base}`;
   } else {
-    cSize.textContent = '—';
+    cStatus.innerHTML = `<span class="no">✗ ${missing.length} file hilang</span>`;
+    info.textContent = 'hilang: ' + missing.join(', ');
   }
-
-  const s = loadState();
-  cLast.textContent = s.lastLoadedAt ? new Date(s.lastLoadedAt).toLocaleString() : '—';
-  return cached;
-}
-async function requestPersist() {
-  try {
-    if (navigator.storage?.persist) {
-      return await navigator.storage.persist();
-    }
-  } catch (e) {}
-  return false;
+  cFiles.textContent = `${found.length}/${files.length}`;
 }
 
-// ── progress handler dengan speed & eta ──
-function onProgress(p) {
-  if (p.status === 'progress') {
-    const pct = p.progress || 0;
-    bar.style.width = Math.max(3, Math.min(99, pct)) + '%';
-    progWrap.classList.add('active');
-
-    const t = performance.now();
-    const loadedBytes = p.loaded || 0;
-
-    if (lastProgressTime > 0) {
-      const dt = (t - lastProgressTime) / 1000;
-      const db = loadedBytes - lastProgressBytes;
-      if (dt > 0.3 && db >= 0) {
-        currentSpeed = db / dt;
-        lastProgressTime = t;
-        lastProgressBytes = loadedBytes;
-      }
-    } else {
-      lastProgressTime = t;
-      lastProgressBytes = loadedBytes;
-    }
-
-    // speed display
-    if (currentSpeed > 0) {
-      const mbps = (currentSpeed / 1e6).toFixed(2);
-      sSpeed.textContent = `${mbps} MB/s`;
-    } else {
-      sSpeed.textContent = '—';
-    }
-
-    // eta
-    if (currentSpeed > 0 && p.total > 0) {
-      const remaining = (p.total - loadedBytes) / currentSpeed;
-      if (remaining < 60) sEta.textContent = `${remaining.toFixed(0)}s`;
-      else if (remaining < 3600) sEta.textContent = `${(remaining/60).toFixed(1)}m`;
-      else sEta.textContent = `${(remaining/3600).toFixed(1)}h`;
-    } else {
-      sEta.textContent = '—';
-    }
-
-    const loaded = (loadedBytes / 1e6).toFixed(1);
-    const total  = (p.total  / 1e6).toFixed(1);
-    sFile.textContent = p.file ? p.file.split('/').pop() : '—';
-    info.textContent = `${loaded}/${total} MB · ${pct.toFixed(1)}%`;
-  } else if (p.status === 'done') {
-    info.textContent = `${p.file} ✓`;
-    sFile.textContent = p.file ? p.file.split('/').pop() : '—';
-  } else if (p.status === 'initiate') {
-    info.textContent = `init ${p.file}...`;
-    sFile.textContent = p.file ? p.file.split('/').pop() : '—';
-  }
-}
-
-// ── cancel download ──
-function cancelDownload() {
-  if (!loading) return;
-  aborted = true;
-  if (downloadAbort) {
-    try { downloadAbort.abort(); } catch (e) {}
-  }
-  info.textContent = 'download dibatalkan.';
-  progWrap.classList.remove('active');
-  bar.style.width = '0%';
-  loading = false;
-  startBtn.disabled = false;
-  startBtn.textContent = 'LANJUT DOWNLOAD';
-  cancelBtn.style.display = 'none';
-  modelSel.disabled = false;
-  switchBtn.style.display = 'none';
-  sSpeed.textContent = '—';
-  sEta.textContent = '—';
-}
-
-// ── load ──
-async function loadModel() {
+// ── load dari path ──
+async function loadFromPath() {
   if (loading || modelReady) return;
   loading = true;
-  aborted = false;
-  downloadAbort = new AbortController();
-  currentSpeed = 0;
-  lastProgressTime = 0;
-  lastProgressBytes = 0;
-
-  startBtn.disabled = true;
-  modelSel.disabled = false; // biar bisa ganti
-  cancelBtn.style.display = 'inline-block';
-  switchBtn.style.display = 'inline-block';
-  bar.style.width = '3%';
-  progWrap.classList.add('active');
+  bar.style.width = '5%';
+  info.textContent = 'memuat tokenizer dari folder lokal...';
 
   try {
-    const key = modelSel.value;
-    const repoId = MODELS[key];
-
-    info.textContent = 'meminta persistent storage...';
-    await requestPersist();
-
-    info.textContent = 'cek cache model...';
-    const cached = await isModelCached(repoId);
-    if (cached) {
-      info.textContent = 'model di cache — langsung load.';
-      bar.style.width = '20%';
+    const base = (modelPathInput.value || currentPath).replace(/\/+$/, '');
+    if (!base) {
+      info.textContent = 'path kosong. isi dulu.';
+      loading = false;
+      return;
     }
+    currentPath = base;
+    localStorage.setItem('regal_model_path', base);
 
-    info.textContent = `tokenizer: ${repoId}`;
-    sFile.textContent = 'tokenizer.json';
-
-    // transformer.js gak expose abort signal, jadi kita pakai pola:
-    // simpan flag aborted. kalau user cancel, kita throw manual di progress callback.
-    const checkAbort = () => {
-      if (aborted) throw new Error('__ABORT__');
-    };
-
-    tokenizer = await AutoTokenizer.from_pretrained(repoId, {
-      progress_callback: (p) => { onProgress(p); checkAbort(); },
+    // tokenizer
+    tokenizer = await AutoTokenizer.from_pretrained(base, {
+      local_files_only: true,
     });
+    bar.style.width = '20%';
+    info.textContent = 'tokenizer ok. load model onnx...';
 
-    checkAbort();
-    bar.style.width = '15%';
-
-    info.textContent = `model: ${repoId}`;
-    sFile.textContent = 'model.onnx';
-
-    model = await AutoModelForCausalLM.from_pretrained(repoId, {
+    // model
+    model = await AutoModelForCausalLM.from_pretrained(base, {
       dtype: 'q4',
       device: navigator.gpu ? 'webgpu' : 'wasm',
-      progress_callback: (p) => { onProgress(p); checkAbort(); },
+      local_files_only: true,
     });
 
-    checkAbort();
-
-    modelReady = true;
     bar.style.width = '100%';
-    progWrap.classList.remove('active');
-    info.textContent = 'model siap.';
+    modelReady = true;
     dot.classList.add('ready');
-    statusEl.innerHTML = `otak: <b>${key.split(' (')[0]}</b> · device: <b>${detectDevice()}</b>`;
+    statusEl.innerHTML = `otak: <b>${base.split('/').pop()}</b> · device: <b>${detectDevice()}</b>`;
 
-    saveState({
-      modelKey: key,
-      lastModelRepo: repoId,
-      lastLoadedAt: Date.now(),
-      lastLoadSuccess: true,
-    });
-
-    setTimeout(() => loader.classList.add('hide'), 500);
-    addMsg('ai', `regal online. otak: **${key.split(' (')[0]}**, device: **${detectDevice()}**.\n\nkalau lu refresh, model gak akan download ulang — auto-load dari cache.\n\ntanya apa aja, he.`, { copy: true });
+    setTimeout(() => loader.classList.add('hide'), 400);
+    addMsg('ai', `regal online. model lokal: **${base.split('/').pop()}**, device: **${detectDevice()}**.\n\nmodel ini di-load dari disk lu, bukan dari internet. refresh gak akan reset apapun.\n\ntanya apa aja, he.`, { copy: true });
     inEl.focus();
   } catch (e) {
     console.error(e);
-    if (e.message === '__ABORT__' || aborted) {
-      info.textContent = 'download dibatalkan oleh user.';
-      bar.style.width = '0%';
-      progWrap.classList.remove('active');
-      startBtn.disabled = false;
-      startBtn.textContent = 'LANJUT DOWNLOAD';
-      cancelBtn.style.display = 'none';
-      switchBtn.style.display = 'none';
-      modelSel.disabled = false;
-      sSpeed.textContent = '—';
-      sEta.textContent = '—';
-      // reset error
-      model = null;
-      tokenizer = null;
-    } else {
-      info.textContent = 'gagal: ' + e.message;
-      dot.classList.add('err');
-      startBtn.disabled = false;
-      startBtn.textContent = 'COBA LAGI';
-      cancelBtn.style.display = 'none';
-      switchBtn.style.display = 'none';
-      modelSel.disabled = false;
-      addMsg('ai', '[error] gagal load model:\n' + e.message);
-    }
-  } finally {
+    info.textContent = 'gagal: ' + e.message;
+    dot.classList.add('err');
     loading = false;
-    downloadAbort = null;
   }
 }
 
-// ── switch model mid-download atau setelah ready ──
-async function switchModel() {
-  const newKey = modelSel.value;
-  const newRepo = MODELS[newKey];
-
-  if (newKey === loadState().modelKey && !modelReady) {
-    // sama, cuma lanjut
-    return;
-  }
-
-  const confirmMsg = modelReady
-    ? `Ganti ke "${newKey.split(' (')[0]}"? Model sekarang akan di-unload.`
-    : `Stop download sekarang, ganti ke "${newKey.split(' (')[0]}"?`;
-
-  if (!confirm(confirmMsg)) return;
-
-  // stop kalau sedang load
-  if (loading) {
-    cancelDownload();
-    await new Promise(r => setTimeout(r, 300));
-  }
-
-  // unload model lama kalau ada
-  if (modelReady) {
-    try {
-      if (model && model.dispose) await model.dispose();
-    } catch (e) {}
-    model = null; tokenizer = null; modelReady = false;
-    dot.classList.remove('ready');
-    statusEl.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
-  }
-
-  saveState({ modelKey: newKey });
-  await refreshCachePanel();
-
-  const cached = await isModelCached(newRepo);
-  startBtn.textContent = cached ? 'LOAD MODEL (CACHE)' : 'MULAI DOWNLOAD';
-  startBtn.disabled = false;
-  info.textContent = cached
-    ? 'model ini udah di cache. klik load.'
-    : `belum di cache. klik buat download ${newRepo}.`;
-
-  // auto start kalau cached
-  if (cached) {
-    setTimeout(() => { if (!modelReady && !loading) loadModel(); }, 500);
-  }
+function useDefault() {
+  modelPathInput.value = './regal-model/qwen2.5-0.5b';
+  diagnose();
 }
 
 // ── generate ──
 async function generate(userText) {
   const messages = [
-    { role: 'system', content: settings.sys },
+    { role: 'system', content: 'Kamu Regal, asisten AI santai, jujur, to the point. Jawab dalam bahasa yang sama dengan user (indo -> indo). Boleh markdown. Kalau diminta code, tulis lengkap.' },
     ...chatHistory,
     { role: 'user', content: userText },
   ];
-  const chat = tokenizer.apply_chat_template(messages, {
-    tokenize: false, add_generation_prompt: true,
-  });
+  const chat = tokenizer.apply_chat_template(messages, { tokenize: false, add_generation_prompt: true });
   const inputs = await tokenizer(chat, { return_tensors: 'pt' });
 
   stopFlag = false;
   let fullText = '';
-  const msgEl = addMsg('ai', '', { copy: true, regen: true });
+  const msgEl = addMsg('ai', '', { copy: true });
   updateMsgEl(msgEl, '…');
 
   const streamer = new TextStreamer(tokenizer, {
@@ -912,17 +469,16 @@ async function generate(userText) {
   try {
     await model.generate({
       ...inputs,
-      max_new_tokens: settings.maxTok,
-      temperature: settings.temp,
-      top_p: settings.topp,
-      repetition_penalty: settings.rep,
+      max_new_tokens: 1024,
+      temperature: 0.7,
+      top_p: 0.9,
+      repetition_penalty: 1.15,
       do_sample: true,
       streamer,
     });
   } catch (e) {
     if (e.message !== '__STOP__') throw e;
   }
-
   chatHistory.push({ role: 'user', content: userText });
   chatHistory.push({ role: 'assistant', content: fullText });
   if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
@@ -933,45 +489,24 @@ async function send() {
   const text = inEl.value.trim();
   if (!text) return;
   if (!modelReady) { addMsg('ai', 'model belum siap.'); return; }
-
   addMsg('user', text);
   inEl.value = ''; inEl.style.height = 'auto';
-  sendBtn.disabled = true;
-  sendBtn.textContent = 'STOP';
+  sendBtn.disabled = true; sendBtn.textContent = 'STOP';
   sendBtn.onclick = () => { stopFlag = true; };
-  generating = true;
-  dot.classList.add('busy');
-
+  generating = true; dot.classList.add('busy');
   try { await generate(text); }
   catch (e) { addMsg('ai', '[error] ' + e.message); }
   finally {
-    sendBtn.disabled = false;
-    sendBtn.textContent = 'KIRIM';
-    sendBtn.onclick = () => send();
-    generating = false;
-    dot.classList.remove('busy');
-    inEl.focus();
+    sendBtn.disabled = false; sendBtn.textContent = 'KIRIM';
+    sendBtn.onclick = () => send(); generating = false;
+    dot.classList.remove('busy'); inEl.focus();
   }
-}
-
-async function regenerate() {
-  if (generating || !modelReady) return;
-  if (chatHistory.length >= 2 && chatHistory[chatHistory.length-1].role === 'assistant') {
-    chatHistory.pop(); chatHistory.pop();
-  }
-  const bubbles = chatEl.querySelectorAll('.msg.ai');
-  if (bubbles.length) bubbles[bubbles.length-1].remove();
-  const lastUser = chatHistory[chatHistory.length-1];
-  if (!lastUser) return;
-  chatHistory.pop();
-  inEl.value = lastUser.content;
-  await send();
 }
 
 function clearChat() {
   chatEl.innerHTML = '';
   chatHistory = [];
-  addMsg('ai', 'chat di-clear, he.');
+  addMsg('ai', 'chat di-clear.');
 }
 
 inEl.addEventListener('keydown', (e) => {
@@ -982,44 +517,19 @@ inEl.addEventListener('input', () => {
   inEl.style.height = Math.min(inEl.scrollHeight, 160) + 'px';
 });
 
-// ── BOOT ──
+// ── boot ──
 (async () => {
   statusEl.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
-  await refreshCachePanel();
+  const saved = localStorage.getItem('regal_model_path');
+  if (saved) modelPathInput.value = saved;
+  else modelPathInput.value = './regal-model/qwen2.5-0.5b';
 
-  const cached = await isModelCached(MODELS[modelSel.value]);
-  if (cached) {
-    startBtn.textContent = 'LOAD MODEL (CACHE)';
-    startBtn.disabled = false;
-    info.textContent = 'model ada di cache. klik atau tunggu auto-load.';
-    setTimeout(() => { if (!modelReady && !loading) loadModel(); }, 800);
-  } else {
-    startBtn.textContent = 'MULAI DOWNLOAD';
-    startBtn.disabled = false;
-    info.textContent = 'belum di cache. klik buat mulai download.';
-  }
-
-  // tombol
-  startBtn.addEventListener('click', loadModel);
-  cancelBtn.addEventListener('click', cancelDownload);
-  switchBtn.addEventListener('click', switchModel);
-
-  // dropdown: simpan pilihan + refresh cache panel
-  modelSel.addEventListener('change', async () => {
-    saveState({ modelKey: modelSel.value });
-    await refreshCachePanel();
-    if (!modelReady) {
-      const c = await isModelCached(MODELS[modelSel.value]);
-      startBtn.textContent = c ? 'LOAD MODEL (CACHE)' : 'MULAI DOWNLOAD';
-      startBtn.disabled = false;
-      info.textContent = c ? 'model cached. klik load.' : `belum cached. klik download.`;
-    }
-  });
+  window.loadFromPath = loadFromPath;
+  window.diagnose = diagnose;
+  window.useDefault = useDefault;
+  window.clearChat = clearChat;
+  window.send = send;
 })();
-
-window.send = send;
-window.clearChat = clearChat;
-window.regenerate = regenerate;
 </script>
 
 </body>
