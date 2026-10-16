@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REGAL AI — v2</title>
+<title>REGAL AI — v3</title>
 <style>
   :root {
     --bg: #0a0a0f;
@@ -15,6 +15,9 @@
     --text: #e8e8f0;
     --dim: #8a8a9a;
     --code: #0d1117;
+    --ok: #00ff88;
+    --warn: #ffb020;
+    --err: #ff2c2c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
@@ -22,18 +25,14 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
   }
   header {
     padding: 10px 16px;
     background: linear-gradient(90deg, #0f0f18, #1a0f1a, #0f0f18);
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0; flex-wrap: wrap;
   }
   .logo {
     font-weight: 800; font-size: 16px; letter-spacing: 3px;
@@ -42,31 +41,21 @@
   }
   .dot {
     width: 8px; height: 8px; border-radius: 50%;
-    background: #ff8800; box-shadow: 0 0 8px #ff8800;
+    background: var(--warn); box-shadow: 0 0 8px var(--warn);
     animation: pulse 1.6s infinite;
   }
-  .dot.ready { background: #00ff88; box-shadow: 0 0 8px #00ff88; animation: none; }
-  .dot.err { background: #ff2c2c; box-shadow: 0 0 8px #ff2c2c; animation: none; }
-  .dot.busy { background: #ff2c8c; box-shadow: 0 0 8px #ff2c8c; }
+  .dot.ready { background: var(--ok); box-shadow: 0 0 8px var(--ok); animation: none; }
+  .dot.err { background: var(--err); box-shadow: 0 0 8px var(--err); animation: none; }
+  .dot.busy { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1.6s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .status { font-size: 10px; color: var(--dim); }
-  .status b { color: #00ff88; }
-  select {
-    background: var(--panel2); color: var(--text);
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 4px 8px; font-family: inherit; font-size: 11px;
-    outline: none; cursor: pointer;
-  }
+  .status b { color: var(--ok); }
   .spacer { flex: 1; }
   .hdr-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    padding: 4px 10px;
-    font-size: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: inherit;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--dim); padding: 4px 10px;
+    font-size: 10px; border-radius: 6px;
+    cursor: pointer; font-family: inherit;
   }
   .hdr-btn:hover { color: var(--text); border-color: var(--accent); }
 
@@ -83,9 +72,9 @@
     font-size: 28px; font-weight: 800; letter-spacing: 6px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
-  .load-sub { font-size: 12px; color: var(--dim); margin-bottom: 24px; text-align: center; line-height: 1.6; }
+  .load-sub { font-size: 12px; color: var(--dim); margin-bottom: 20px; text-align: center; line-height: 1.6; }
   .progress {
     width: 340px; max-width: 80vw; height: 6px;
     background: var(--panel2); border-radius: 3px; overflow: hidden;
@@ -99,17 +88,44 @@
   .load-info { font-size: 11px; color: var(--dim); min-height: 16px; font-family: monospace; text-align: center; }
   .load-note {
     font-size: 10px; color: var(--dim);
-    margin-top: 24px; max-width: 420px;
-    text-align: center; line-height: 1.7; opacity: .7;
+    margin-top: 20px; max-width: 440px;
+    text-align: center; line-height: 1.7; opacity: .8;
   }
   .loader-btn {
-    margin-top: 20px;
+    margin-top: 16px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; border: none; border-radius: 10px;
     padding: 12px 28px; font-family: inherit; font-weight: 700;
     letter-spacing: 1px; cursor: pointer; font-size: 13px;
   }
   .loader-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .loader-btn.ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-weight: 400;
+  }
+
+  /* cache info panel */
+  .cache-panel {
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--dim);
+    max-width: 440px;
+    width: 100%;
+  }
+  .cache-panel .row {
+    display: flex; justify-content: space-between;
+    padding: 3px 0;
+  }
+  .cache-panel .row b { color: var(--text); font-weight: 500; }
+  .cache-panel .row .ok { color: var(--ok); }
+  .cache-panel .row .no { color: var(--err); }
+  .cache-panel .row .warn { color: var(--warn); }
 
   #chat {
     flex: 1; overflow-y: auto; padding: 18px;
@@ -120,13 +136,9 @@
   #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   .msg {
-    max-width: 88%;
-    padding: 12px 16px;
-    border-radius: 14px;
-    line-height: 1.6;
-    font-size: 13.5px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    max-width: 88%; padding: 12px 16px;
+    border-radius: 14px; line-height: 1.6; font-size: 13.5px;
+    word-wrap: break-word; overflow-wrap: break-word;
     animation: fadein .2s ease;
   }
   @keyframes fadein { from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)} }
@@ -146,34 +158,25 @@
   .msg.ai .md { white-space: normal; }
   .msg.ai .md p { margin: 6px 0; }
   .msg.ai .md pre {
-    background: var(--code);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    overflow-x: auto;
-    margin: 8px 0;
-    font-size: 12px;
-    line-height: 1.5;
+    background: var(--code); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; overflow-x: auto;
+    margin: 8px 0; font-size: 12px; line-height: 1.5;
   }
   .msg.ai .md code.inline {
-    background: var(--code);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-size: 12px;
+    background: var(--code); padding: 1px 5px;
+    border-radius: 4px; font-size: 12px;
   }
-  .msg.ai .md h1, .msg.ai .md h2, .msg.ai .md h3 {
-    margin: 10px 0 6px; color: #ffb3d9;
-  }
+  .msg.ai .md h1, .msg.ai .md h2, .msg.ai .md h3 { margin: 10px 0 6px; color: #ffb3d9; }
   .msg.ai .md ul, .msg.ai .md ol { margin: 6px 0 6px 22px; }
   .msg.ai .md li { margin: 3px 0; }
   .msg.ai .md strong { color: #ffb3d9; }
-  .msg .ts { display: block; font-size: 10px; color: var(--dim); margin-top: 6px; opacity: .5; }
   .msg .meta { display: flex; gap: 8px; margin-top: 4px; }
   .msg .meta button {
     background: transparent; border: none; color: var(--dim);
     font-size: 10px; cursor: pointer; padding: 0; font-family: inherit;
   }
   .msg .meta button:hover { color: var(--accent); }
+  .msg .meta span { font-size: 10px; color: var(--dim); opacity: .5; }
 
   .typing { display: inline-flex; gap: 3px; align-items: center; }
   .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.4s infinite both; }
@@ -189,17 +192,11 @@
   }
   .input-row { display: flex; gap: 8px; align-items: flex-end; }
   textarea {
-    flex: 1;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-    resize: none;
-    max-height: 160px;
-    outline: none;
+    flex: 1; background: var(--panel2);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; color: var(--text);
+    font-family: inherit; font-size: 14px; resize: none;
+    max-height: 160px; outline: none;
     transition: border-color .15s;
   }
   textarea:focus { border-color: var(--accent); }
@@ -218,7 +215,6 @@
   .hint kbd { background: var(--panel2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-family: inherit; }
   .hint b { color: var(--accent); }
 
-  /* settings modal */
   #settings {
     position: fixed; inset: 0; background: rgba(0,0,0,.7);
     display: none; align-items: center; justify-content: center; z-index: 1000;
@@ -226,30 +222,23 @@
   }
   #settings.show { display: flex; }
   .modal {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    max-width: 480px; width: 100%;
-    max-height: 80vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px;
+    max-width: 500px; width: 100%;
+    max-height: 85vh; overflow-y: auto;
   }
   .modal h2 { font-size: 14px; margin-bottom: 14px; letter-spacing: 1px; color: var(--accent); }
-  .field { margin-bottom: 14px; }
+  .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 6px; }
   .field input, .field textarea {
-    width: 100%;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-family: inherit;
-    font-size: 12px;
-    outline: none;
+    width: 100%; background: var(--panel2);
+    border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 8px 10px;
+    font-family: inherit; font-size: 12px; outline: none;
     resize: vertical;
   }
-  .field textarea { min-height: 80px; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  .field textarea { min-height: 100px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; }
   .modal-actions button {
     border: 1px solid var(--border); background: transparent;
     color: var(--text); padding: 8px 14px;
@@ -257,6 +246,7 @@
     font-family: inherit; font-size: 12px;
   }
   .modal-actions button.primary { border: none; }
+  .modal-actions button.danger { color: var(--err); border-color: var(--err); }
 </style>
 </head>
 <body>
@@ -265,21 +255,31 @@
   <div class="load-title">REGAL</div>
   <div class="load-sub">
     on-device chat model · no api · no server<br>
-    <span style="color:#ff2c8c">chat model (bukan text2text) · multilingual · code-capable</span>
+    <span style="color:#ff2c8c">v3 — resume + persist + auto-load</span>
   </div>
-  <div class="progress"><div id="bar"></div></div>
-  <div class="load-info" id="info">menunggu...</div>
-  <div style="margin-top: 14px; display: flex; gap: 8px; align-items: center;">
+
+  <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
     <label style="font-size: 11px; color: var(--dim);">model:</label>
-    <select id="modelSelect"></select>
+    <select id="modelSelect" style="background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-family: inherit; font-size: 12px;"></select>
   </div>
-  <button class="loader-btn" id="startBtn">MULAI LOAD MODEL</button>
+
+  <div class="progress" style="margin-top: 16px;"><div id="bar"></div></div>
+  <div class="load-info" id="info">mengecek cache...</div>
+
+  <div class="cache-panel" id="cachePanel">
+    <div class="row"><span>Storage persistent</span><b id="cPersist">—</b></div>
+    <div class="row"><span>Model di cache</span><b id="cModel">—</b></div>
+    <div class="row"><span>Cache size</span><b id="cSize">—</b></div>
+    <div class="row"><span>Last loaded</span><b id="cLast">—</b></div>
+  </div>
+
+  <button class="loader-btn" id="startBtn" disabled>MEMERIKSA...</button>
+
   <div class="load-note">
-    <b style="color:#ff2c8c">qwen2.5-1.5b</b> = default, kualitas terbaik buat chat + code + indo. ~1.2GB.<br>
-    <b>qwen2.5-0.5b</b> = versi kecil, ~400MB, lebih cepat tapi kurang pinter.<br>
-    <b>llama-3.2-1b</b> = ~900MB, bagus buat chat, inggris lebih kuat.<br>
-    <b>llama-3.2-3b</b> = ~2GB, paling pinter, paling lambat.<br>
-    download sekali, di-cache di browser. setelah itu offline.
+    <b style="color:#ff2c8c">Qwen2.5-0.5B</b> = 400MB, cepat, cukup buat chat + code ringan.<br>
+    <b style="color:#ff2c8c">Qwen2.5-1.5B</b> = 1.2GB, kualitas bagus, butuh ram 4GB+.<br>
+    <b>Llama-3.2-1B</b> = 900MB. <b>Llama-3.2-3B</b> = 2GB, paling pinter.<br>
+    <b style="color:var(--ok)">setelah load pertama, refresh gak akan download ulang.</b>
   </div>
 </div>
 
@@ -288,7 +288,6 @@
   <div class="logo">REGAL</div>
   <div class="status" id="status">otak: <b>—</b></div>
   <div class="spacer"></div>
-  <select id="modelSwitch" style="display:none"></select>
   <button class="hdr-btn" onclick="showSettings()">⚙ settings</button>
   <button class="hdr-btn" onclick="clearChat()">clear</button>
 </header>
@@ -302,7 +301,7 @@
   </div>
   <div class="hint">
     <kbd>enter</kbd> kirim · <kbd>shift+enter</kbd> baris baru ·
-    <b>stop</b> kalau mau berhenti di tengah generasi
+    <b>stop</b> kalau mau berhenti
   </div>
 </footer>
 
@@ -310,11 +309,11 @@
   <div class="modal">
     <h2>SETTINGS</h2>
     <div class="field">
-      <label>System prompt (kepribadian ai)</label>
+      <label>System prompt</label>
       <textarea id="sysPrompt"></textarea>
     </div>
     <div class="field">
-      <label>Temperature (0.0 = konsisten, 1.5 = kreatif acak)</label>
+      <label>Temperature (0.0-2.0)</label>
       <input id="temp" type="number" step="0.05" min="0" max="2">
     </div>
     <div class="field">
@@ -322,14 +321,15 @@
       <input id="topp" type="number" step="0.05" min="0" max="1">
     </div>
     <div class="field">
-      <label>Repetition penalty (1.0 = off, 1.3 = anti ngulang)</label>
+      <label>Repetition penalty (1.0-2.0)</label>
       <input id="rep" type="number" step="0.05" min="1" max="2">
     </div>
     <div class="field">
-      <label>Max new tokens (panjang jawaban maksimal)</label>
+      <label>Max new tokens</label>
       <input id="maxTok" type="number" step="64" min="64" max="4096">
     </div>
     <div class="modal-actions">
+      <button class="danger" onclick="clearAllCache()">HAPUS SEMUA CACHE</button>
       <button onclick="hideSettings()">BATAL</button>
       <button class="primary" onclick="saveSettings()">SIMPAN</button>
     </div>
@@ -338,11 +338,11 @@
 
 <script type="module">
 // ═══════════════════════════════════════════════════════════════
-//  REGAL AI v2 — chat model, streaming, chat template, code-capable
-//  - pakai transformers.js (wasm / webgpu)
-//  - model: qwen2.5 / llama-3.2 (chat models)
-//  - chat template asli dari tokenizer
-//  - streaming token per token
+//  REGAL AI v3 — persist + resume + auto-load
+//  - persistent storage request (biar browser gak evict cache)
+//  - auto-detect model di cache -> langsung load tanpa download
+//  - resume download kalau putus di tengah
+//  - status cache di UI
 // ═══════════════════════════════════════════════════════════════
 
 import {
@@ -354,32 +354,32 @@ import {
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
+// penting: biar cache gak di-flush sama service worker / cache lain
+env.useCustomCache = false;
 
-// daftar model — key = label di UI, value = repo id HF
 const MODELS = {
-  'Qwen2.5-0.5B-Instruct (cepat, 400MB)':    'onnx-community/Qwen2.5-0.5B-Instruct',
-  'Qwen2.5-1.5B-Instruct (recommended, 1.2GB)': 'onnx-community/Qwen2.5-1.5B-Instruct',
-  'Llama-3.2-1B-Instruct (900MB)':           'onnx-community/Llama-3.2-1B-Instruct',
-  'Llama-3.2-3B-Instruct (paling pinter, 2GB)': 'onnx-community/Llama-3.2-3B-Instruct',
-  'SmolLM2-1.7B-Instruct (1GB)':             'HuggingFaceTB/SmolLM2-1.7B-Instruct',
+  'Qwen2.5-0.5B-Instruct (~400MB)':  'onnx-community/Qwen2.5-0.5B-Instruct',
+  'Qwen2.5-1.5B-Instruct (~1.2GB)':  'onnx-community/Qwen2.5-1.5B-Instruct',
+  'Llama-3.2-1B-Instruct (~900MB)':  'onnx-community/Llama-3.2-1B-Instruct',
+  'Llama-3.2-3B-Instruct (~2GB)':    'onnx-community/Llama-3.2-3B-Instruct',
 };
-const DEFAULT_KEY = 'Qwen2.5-1.5B-Instruct (recommended, 1.2GB)';
+const DEFAULT_KEY = 'Qwen2.5-0.5B-Instruct (~400MB)';
+const STORAGE_KEY = 'regal_ai_state_v3';
 
-const DEFAULT_SYS = `Kamu adalah Regal, asisten AI yang santai, jujur, dan to the point.
-- Jawab dalam bahasa yang sama dengan pertanyaan user (kalau user pakai indo, jawab indo).
-- Gak usah basa-basi berlebihan. Langsung ke inti.
-- Kalau diminta nulis code, tulis lengkap dan runnable, bukan potongan.
-- Kalau gak tau, bilang gak tau. Jangan ngarang.
-- Boleh pakai markdown (##, **bold**, \`code\`, dsb).`;
+const DEFAULT_SYS = `Kamu adalah Regal, asisten AI santai, jujur, to the point.
+- Jawab dalam bahasa yang sama dengan user (indo -> indo).
+- Gak usah basa-basi berlebihan.
+- Kalau diminta code, tulis lengkap & runnable.
+- Kalau gak tau, bilang gak tau.
+- Boleh markdown (##, **bold**, \`code\`).`;
 
-// ── state ──
 let tokenizer = null;
 let model = null;
 let modelReady = false;
 let loading = false;
 let generating = false;
 let stopFlag = false;
-let chatHistory = []; // [{role:'user'|'assistant', content:'...'}]
+let chatHistory = [];
 
 const chatEl  = document.getElementById('chat');
 const inEl    = document.getElementById('in');
@@ -391,30 +391,40 @@ const bar     = document.getElementById('bar');
 const info    = document.getElementById('info');
 const startBtn= document.getElementById('startBtn');
 const modelSel= document.getElementById('modelSelect');
-const modelSwitch = document.getElementById('modelSwitch');
+const cPersist= document.getElementById('cPersist');
+const cModel  = document.getElementById('cModel');
+const cSize   = document.getElementById('cSize');
+const cLast   = document.getElementById('cLast');
 
-// isi dropdown model
-for (const [label] of Object.entries(MODELS)) {
-  const o1 = document.createElement('option');
-  o1.value = label; o1.textContent = label;
-  modelSel.appendChild(o1);
-
-  const o2 = document.createElement('option');
-  o2.value = label; o2.textContent = label;
-  modelSwitch.appendChild(o2);
+// ── load state dari localStorage ──
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch { return {}; }
 }
-modelSel.value = DEFAULT_KEY;
-modelSwitch.value = DEFAULT_KEY;
+function saveState(patch) {
+  const s = loadState();
+  Object.assign(s, patch, { updatedAt: Date.now() });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+// ── isi dropdown model ──
+for (const label of Object.keys(MODELS)) {
+  const o = document.createElement('option');
+  o.value = label; o.textContent = label;
+  modelSel.appendChild(o);
+}
+modelSel.value = loadState().modelKey || DEFAULT_KEY;
 
 // ── settings ──
+const st = loadState();
 const settings = {
-  sys: DEFAULT_SYS,
-  temp: 0.7,
-  topp: 0.9,
-  rep: 1.15,
-  maxTok: 1024,
+  sys: st.sys || DEFAULT_SYS,
+  temp: st.temp ?? 0.7,
+  topp: st.topp ?? 0.9,
+  rep: st.rep ?? 1.15,
+  maxTok: st.maxTok ?? 1024,
 };
-
 function showSettings() {
   document.getElementById('sysPrompt').value = settings.sys;
   document.getElementById('temp').value = settings.temp;
@@ -430,11 +440,32 @@ function saveSettings() {
   settings.topp = parseFloat(document.getElementById('topp').value);
   settings.rep = parseFloat(document.getElementById('rep').value);
   settings.maxTok = parseInt(document.getElementById('maxTok').value);
+  saveState({ sys: settings.sys, temp: settings.temp, topp: settings.topp, rep: settings.rep, maxTok: settings.maxTok });
   hideSettings();
+}
+async function clearAllCache() {
+  if (!confirm('Hapus semua cache model + state? (harus download ulang dari 0)')) return;
+  try {
+    const keys = await caches.keys();
+    for (const k of keys) await caches.delete(k);
+    // hapus juga entry dari CacheStorage transformer.js (IndexedDB)
+    const dbs = await indexedDB.databases?.() || [];
+    for (const db of dbs) {
+      if (db.name && (db.name.includes('transformers') || db.name.includes('onnx'))) {
+        indexedDB.deleteDatabase(db.name);
+      }
+    }
+    localStorage.removeItem(STORAGE_KEY);
+    alert('cache dibersihkan. reload halaman.');
+    location.reload();
+  } catch (e) {
+    alert('gagal clear: ' + e.message);
+  }
 }
 window.showSettings = showSettings;
 window.hideSettings = hideSettings;
 window.saveSettings = saveSettings;
+window.clearAllCache = clearAllCache;
 
 // ── util ──
 function now() {
@@ -444,15 +475,13 @@ function now() {
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-// markdown sederhana (code block, bold, italic, heading, list, inline code)
 function mdToHtml(s) {
   s = esc(s);
   const blocks = [];
   s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
     const i = blocks.length;
     blocks.push(`<pre><code class="lang-${lang||'text'}">${code.replace(/^\n|\n$/g,'')}</code></pre>`);
-    return `\u0000BLOCK${i}\u0000`;
+    return `\u0000B${i}\u0000`;
   });
   s = s.replace(/`([^`\n]+)`/g, '<code class="inline">$1</code>');
   s = s.replace(/^### (.+)$/gm, '<h3>$1</h3>');
@@ -462,46 +491,35 @@ function mdToHtml(s) {
   s = s.replace(/\*([^*]+)\*/g,     '<em>$1</em>');
   s = s.replace(/^- (.+)$/gm, '<li>$1</li>');
   s = s.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-  s = s.replace(/\u0000BLOCK(\d+)\u0000/g, (m, i) => blocks[parseInt(i)]);
+  s = s.replace(/\u0000B(\d+)\u0000/g, (m, i) => blocks[parseInt(i)]);
   s = s.replace(/\n/g, '<br>');
   return s;
 }
-
 function addMsg(role, text, opts = {}) {
   const div = document.createElement('div');
   div.className = 'msg ' + role;
-  if (role === 'ai') {
-    div.innerHTML = '<div class="md">' + mdToHtml(text) + '</div>';
-  } else {
-    div.innerHTML = esc(text).replace(/\n/g, '<br>');
-  }
+  if (role === 'ai') div.innerHTML = '<div class="md">' + mdToHtml(text) + '</div>';
+  else div.innerHTML = esc(text).replace(/\n/g, '<br>');
   const meta = document.createElement('div');
   meta.className = 'meta';
-  meta.innerHTML = `<span style="font-size:10px;color:var(--dim);opacity:.5">${now()}</span>`;
+  meta.innerHTML = `<span>${now()}</span>`;
   if (opts.copy) {
-    const btn = document.createElement('button');
-    btn.textContent = 'copy';
-    btn.onclick = () => navigator.clipboard.writeText(text);
-    meta.appendChild(btn);
+    const b = document.createElement('button'); b.textContent = 'copy';
+    b.onclick = () => navigator.clipboard.writeText(text); meta.appendChild(b);
   }
   if (opts.regen) {
-    const btn = document.createElement('button');
-    btn.textContent = 'regenerate';
-    btn.onclick = () => regenerate();
-    meta.appendChild(btn);
+    const b = document.createElement('button'); b.textContent = 'regenerate';
+    b.onclick = () => regenerate(); meta.appendChild(b);
   }
   div.appendChild(meta);
   chatEl.appendChild(div);
   chatEl.scrollTop = chatEl.scrollHeight;
   return div;
 }
-
 function updateMsgEl(el, text) {
-  const md = el.querySelector('.md');
-  md.innerHTML = mdToHtml(text);
+  el.querySelector('.md').innerHTML = mdToHtml(text);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
-
 function addTyping() {
   const div = document.createElement('div');
   div.className = 'msg ai';
@@ -510,36 +528,122 @@ function addTyping() {
   chatEl.scrollTop = chatEl.scrollHeight;
   return div;
 }
-
-// ── device ──
 function detectDevice() {
   if (navigator.gpu) return 'webgpu';
   if (navigator.hardwareConcurrency >= 4) return 'wasm-mt';
   return 'wasm';
 }
 
-// ── load model ──
+// ── cache detection ──
+// cek apakah model ada di CacheStorage (transformers.js pakai browser cache API)
+async function isModelCached(repoId) {
+  try {
+    const keys = await caches.keys();
+    for (const k of keys) {
+      const cache = await caches.open(k);
+      const reqs = await cache.keys();
+      for (const r of reqs) {
+        if (r.url.includes(repoId)) return true;
+      }
+    }
+  } catch (e) { /* ignore */ }
+  // fallback: cek localStorage state
+  const s = loadState();
+  return s.modelKey === repoId || s.lastModelRepo === repoId;
+}
+
+async function getCacheInfo() {
+  try {
+    if (navigator.storage?.estimate) {
+      const est = await navigator.storage.estimate();
+      return { quota: est.quota, usage: est.usage };
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function refreshCachePanel() {
+  // persistent storage status
+  let persisted = false;
+  try {
+    if (navigator.storage?.persisted) {
+      persisted = await navigator.storage.persisted();
+    }
+  } catch (e) {}
+  cPersist.textContent = persisted ? '✓ granted' : '✗ not granted';
+  cPersist.className = persisted ? 'ok' : 'warn';
+
+  // model cached
+  const repoId = MODELS[modelSel.value];
+  const cached = await isModelCached(repoId);
+  cModel.textContent = cached ? `✓ ${repoId}` : '✗ belum';
+  cModel.className = cached ? 'ok' : 'no';
+
+  // cache size
+  const ci = await getCacheInfo();
+  if (ci) {
+    cSize.textContent = `${(ci.usage/1e6).toFixed(1)} MB / ${(ci.quota/1e6/1000).toFixed(1)} GB`;
+  } else {
+    cSize.textContent = '—';
+  }
+
+  // last loaded
+  const s = loadState();
+  cLast.textContent = s.lastLoadedAt ? new Date(s.lastLoadedAt).toLocaleString() : '—';
+
+  return cached;
+}
+
+async function requestPersist() {
+  try {
+    if (navigator.storage?.persist) {
+      const granted = await navigator.storage.persist();
+      console.log('[regal] persistent storage:', granted);
+      return granted;
+    }
+  } catch (e) { console.warn(e); }
+  return false;
+}
+
+// ── load ──
 async function loadModel() {
   if (loading || modelReady) return;
   loading = true;
   startBtn.disabled = true;
   modelSel.disabled = true;
-  info.textContent = 'memuat tokenizer...';
   bar.style.width = '3%';
 
   try {
     const key = modelSel.value;
     const repoId = MODELS[key];
-    info.textContent = `loading tokenizer: ${repoId}`;
+
+    // 1. minta persistent storage dulu (biar browser gak evict)
+    info.textContent = 'meminta persistent storage...';
+    await requestPersist();
+
+    // 2. cek apakah model udah di cache
+    info.textContent = 'cek cache model...';
+    const cached = await isModelCached(repoId);
+    if (cached) {
+      info.textContent = 'model di cache — langsung load tanpa download.';
+      bar.style.width = '20%';
+    } else {
+      info.textContent = `mulai download ${repoId}...`;
+      bar.style.width = '5%';
+    }
+
+    // 3. tokenizer
+    info.textContent = `tokenizer: ${repoId}`;
     tokenizer = await AutoTokenizer.from_pretrained(repoId, {
       progress_callback: onProgress,
     });
 
-    bar.style.width = '8%';
-    info.textContent = `loading model: ${repoId} (mungkin lama, sabar)`;
+    bar.style.width = '15%';
 
+    // 4. model
+    info.textContent = `model: ${repoId}`;
     model = await AutoModelForCausalLM.from_pretrained(repoId, {
-      dtype: 'q4',           // 4-bit quantized — hemat ram, cepat
+      dtype: 'q4',
       device: navigator.gpu ? 'webgpu' : 'wasm',
       progress_callback: onProgress,
     });
@@ -550,9 +654,15 @@ async function loadModel() {
     dot.classList.add('ready');
     statusEl.innerHTML = `otak: <b>${key.split(' (')[0]}</b> · device: <b>${detectDevice()}</b>`;
 
+    // simpan state
+    saveState({
+      modelKey: key,
+      lastModelRepo: repoId,
+      lastLoadedAt: Date.now(),
+    });
+
     setTimeout(() => loader.classList.add('hide'), 500);
-    addMsg('ai', `regal online. otak: **${key.split(' (')[0]}**, device: **${detectDevice()}**.\n\nsemua inference jalan di browser lu, gak ada yang dikirim ke server.\n\ntanya apa aja — termasuk code, bahasa indonesia, apapun.`, { copy: true });
-    modelSwitch.style.display = 'inline-block';
+    addMsg('ai', `regal online. otak: **${key.split(' (')[0]}**, device: **${detectDevice()}**.\n\nkalau lu refresh halaman ini, model **gak akan download ulang** — langsung load dari cache.\n\ntanya apa aja, he.`, { copy: true });
     inEl.focus();
   } catch (e) {
     console.error(e);
@@ -583,19 +693,15 @@ function onProgress(p) {
 
 // ── generate ──
 async function generate(userText) {
-  // build messages pakai chat history + system prompt
   const messages = [
     { role: 'system', content: settings.sys },
     ...chatHistory,
     { role: 'user', content: userText },
   ];
-
-  // pakai chat template asli dari tokenizer
   const chat = tokenizer.apply_chat_template(messages, {
     tokenize: false,
     add_generation_prompt: true,
   });
-
   const inputs = await tokenizer(chat, { return_tensors: 'pt' });
 
   stopFlag = false;
@@ -614,7 +720,7 @@ async function generate(userText) {
   });
 
   try {
-    const output = await model.generate({
+    await model.generate({
       ...inputs,
       max_new_tokens: settings.maxTok,
       temperature: settings.temp,
@@ -627,22 +733,16 @@ async function generate(userText) {
     if (e.message !== '__STOP__') throw e;
   }
 
-  // simpan ke history
   chatHistory.push({ role: 'user', content: userText });
   chatHistory.push({ role: 'assistant', content: fullText });
-  // trim history biar gak kepanjangan (8 pesan terakhir)
   if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 }
 
-// ── send flow ──
 async function send() {
   if (generating) return;
   const text = inEl.value.trim();
   if (!text) return;
-  if (!modelReady) {
-    addMsg('ai', 'model belum siap. tunggu loading selesai.');
-    return;
-  }
+  if (!modelReady) { addMsg('ai', 'model belum siap.'); return; }
 
   addMsg('user', text);
   inEl.value = '';
@@ -669,15 +769,11 @@ async function send() {
 
 async function regenerate() {
   if (generating || !modelReady) return;
-  // hapus pesan ai terakhir dari history
   if (chatHistory.length >= 2 && chatHistory[chatHistory.length-1].role === 'assistant') {
-    chatHistory.pop();
-    chatHistory.pop();
+    chatHistory.pop(); chatHistory.pop();
   }
-  // hapus bubble ai terakhir dari UI
   const bubbles = chatEl.querySelectorAll('.msg.ai');
   if (bubbles.length) bubbles[bubbles.length-1].remove();
-  // kirim ulang pesan user terakhir
   const lastUser = chatHistory[chatHistory.length-1];
   if (!lastUser) return;
   chatHistory.pop();
@@ -691,7 +787,6 @@ function clearChat() {
   addMsg('ai', 'chat di-clear, he.');
 }
 
-// ── input ──
 inEl.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
 });
@@ -700,9 +795,37 @@ inEl.addEventListener('input', () => {
   inEl.style.height = Math.min(inEl.scrollHeight, 160) + 'px';
 });
 
-// ── boot ──
-statusEl.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
-startBtn.addEventListener('click', loadModel);
+// ── BOOT ──
+(async () => {
+  statusEl.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
+
+  // panel cache refresh
+  await refreshCachePanel();
+
+  // cek apakah model udah cached
+  const cached = await isModelCached(MODELS[modelSel.value]);
+
+  if (cached) {
+    startBtn.textContent = 'LOAD MODEL (DARI CACHE)';
+    startBtn.disabled = false;
+    info.textContent = 'model ada di cache. klik untuk load.';
+    // auto-load setelah 800ms
+    setTimeout(() => { if (!modelReady && !loading) loadModel(); }, 800);
+  } else {
+    startBtn.textContent = 'MULAI LOAD MODEL (DOWNLOAD)';
+    startBtn.disabled = false;
+    info.textContent = 'model belum di cache. klik untuk download.';
+  }
+
+  modelSel.addEventListener('change', async () => {
+    saveState({ modelKey: modelSel.value });
+    await refreshCachePanel();
+    const c = await isModelCached(MODELS[modelSel.value]);
+    startBtn.textContent = c ? 'LOAD MODEL (DARI CACHE)' : 'MULAI LOAD MODEL (DOWNLOAD)';
+  });
+
+  startBtn.addEventListener('click', loadModel);
+})();
 
 window.send = send;
 window.clearChat = clearChat;
