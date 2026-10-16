@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REGAL AI — v3</title>
+<title>REGAL AI — v4</title>
 <style>
   :root {
     --bg: #0a0a0f;
@@ -65,7 +65,7 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     z-index: 999; transition: opacity .4s;
-    padding: 20px;
+    padding: 20px; overflow-y: auto;
   }
   #loader.hide { opacity: 0; pointer-events: none; }
   .load-title {
@@ -74,30 +74,70 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
     margin-bottom: 14px;
   }
-  .load-sub { font-size: 12px; color: var(--dim); margin-bottom: 20px; text-align: center; line-height: 1.6; }
+  .load-sub { font-size: 12px; color: var(--dim); margin-bottom: 18px; text-align: center; line-height: 1.6; }
+
+  /* model picker — dua baris: dropdown + tombol */
+  .model-picker {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 14px; max-width: 480px; width: 100%;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .model-picker label { font-size: 11px; color: var(--dim); }
+  .model-picker select {
+    flex: 1; min-width: 220px;
+    background: var(--panel2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-family: inherit; font-size: 12px;
+    outline: none; cursor: pointer;
+  }
+  .model-picker select:disabled { opacity: .5; cursor: not-allowed; }
+  .model-picker select:focus { border-color: var(--accent); }
+
   .progress {
-    width: 340px; max-width: 80vw; height: 6px;
-    background: var(--panel2); border-radius: 3px; overflow: hidden;
-    margin-bottom: 12px;
+    width: 340px; max-width: 80vw; height: 8px;
+    background: var(--panel2); border-radius: 4px; overflow: hidden;
+    margin-bottom: 10px;
+    position: relative;
   }
   .progress > div {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
     transition: width .2s;
   }
-  .load-info { font-size: 11px; color: var(--dim); min-height: 16px; font-family: monospace; text-align: center; }
+  .progress .stripes {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent 0 10px,
+      rgba(255,255,255,.05) 10px 20px
+    );
+    animation: slide 1s linear infinite;
+    display: none;
+  }
+  .progress.active .stripes { display: block; }
+  @keyframes slide { from{background-position:0 0} to{background-position:20px 0} }
+
+  .load-info { font-size: 11px; color: var(--dim); min-height: 16px; font-family: monospace; text-align: center; max-width: 90vw; word-break: break-all; }
   .load-note {
     font-size: 10px; color: var(--dim);
-    margin-top: 20px; max-width: 440px;
+    margin-top: 18px; max-width: 460px;
     text-align: center; line-height: 1.7; opacity: .8;
   }
+
+  /* tombol control */
+  .load-controls {
+    display: flex; gap: 8px; margin-top: 14px;
+    flex-wrap: wrap; justify-content: center;
+  }
   .loader-btn {
-    margin-top: 16px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; border: none; border-radius: 10px;
-    padding: 12px 28px; font-family: inherit; font-weight: 700;
+    padding: 11px 24px; font-family: inherit; font-weight: 700;
     letter-spacing: 1px; cursor: pointer; font-size: 13px;
+    transition: transform .1s, opacity .15s;
   }
+  .loader-btn:hover:not(:disabled) { opacity: .9; }
+  .loader-btn:active:not(:disabled) { transform: scale(.97); }
   .loader-btn:disabled { opacity: .4; cursor: not-allowed; }
   .loader-btn.ghost {
     background: transparent;
@@ -105,24 +145,36 @@
     color: var(--dim);
     font-weight: 400;
   }
+  .loader-btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+  .loader-btn.danger {
+    background: transparent;
+    border: 1px solid var(--err);
+    color: var(--err);
+    font-weight: 600;
+  }
+  .loader-btn.danger:hover:not(:disabled) { background: rgba(255,44,44,.1); }
 
-  /* cache info panel */
+  /* speed / eta bar */
+  .load-stats {
+    display: flex; gap: 16px; justify-content: center;
+    font-size: 10px; color: var(--dim);
+    margin-top: 6px; font-family: monospace;
+    flex-wrap: wrap;
+  }
+  .load-stats b { color: var(--text); font-weight: 500; }
+
+  /* cache panel */
   .cache-panel {
-    margin-top: 16px;
-    padding: 10px 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 11px;
-    color: var(--dim);
-    max-width: 440px;
-    width: 100%;
+    margin-top: 16px; padding: 10px 14px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 11px; color: var(--dim);
+    max-width: 460px; width: 100%;
   }
   .cache-panel .row {
     display: flex; justify-content: space-between;
-    padding: 3px 0;
+    padding: 3px 0; gap: 10px;
   }
-  .cache-panel .row b { color: var(--text); font-weight: 500; }
+  .cache-panel .row b { color: var(--text); font-weight: 500; text-align: right; word-break: break-all; }
   .cache-panel .row .ok { color: var(--ok); }
   .cache-panel .row .no { color: var(--err); }
   .cache-panel .row .warn { color: var(--warn); }
@@ -255,16 +307,27 @@
   <div class="load-title">REGAL</div>
   <div class="load-sub">
     on-device chat model · no api · no server<br>
-    <span style="color:#ff2c8c">v3 — resume + persist + auto-load</span>
+    <span style="color:#ff2c8c">v4 — stop download + ganti model kapan aja</span>
   </div>
 
-  <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-    <label style="font-size: 11px; color: var(--dim);">model:</label>
-    <select id="modelSelect" style="background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-family: inherit; font-size: 12px;"></select>
+  <div class="model-picker">
+    <label>model:</label>
+    <select id="modelSelect"></select>
+    <button class="loader-btn ghost" id="switchBtn" style="display:none; padding: 8px 14px; font-size: 11px;">GANTI MODEL</button>
   </div>
 
-  <div class="progress" style="margin-top: 16px;"><div id="bar"></div></div>
+  <div class="progress" id="progWrap"><div id="bar"></div><div class="stripes"></div></div>
   <div class="load-info" id="info">mengecek cache...</div>
+  <div class="load-stats">
+    <span>speed: <b id="sSpeed">—</b></span>
+    <span>eta: <b id="sEta">—</b></span>
+    <span>file: <b id="sFile">—</b></span>
+  </div>
+
+  <div class="load-controls">
+    <button class="loader-btn" id="startBtn" disabled>MEMERIKSA...</button>
+    <button class="loader-btn danger" id="cancelBtn" style="display:none;">BATAL DOWNLOAD</button>
+  </div>
 
   <div class="cache-panel" id="cachePanel">
     <div class="row"><span>Storage persistent</span><b id="cPersist">—</b></div>
@@ -273,13 +336,11 @@
     <div class="row"><span>Last loaded</span><b id="cLast">—</b></div>
   </div>
 
-  <button class="loader-btn" id="startBtn" disabled>MEMERIKSA...</button>
-
   <div class="load-note">
-    <b style="color:#ff2c8c">Qwen2.5-0.5B</b> = 400MB, cepat, cukup buat chat + code ringan.<br>
-    <b style="color:#ff2c8c">Qwen2.5-1.5B</b> = 1.2GB, kualitas bagus, butuh ram 4GB+.<br>
-    <b>Llama-3.2-1B</b> = 900MB. <b>Llama-3.2-3B</b> = 2GB, paling pinter.<br>
-    <b style="color:var(--ok)">setelah load pertama, refresh gak akan download ulang.</b>
+    <b style="color:#ff2c8c">Qwen2.5-0.5B</b> = 400MB · <b>Qwen2.5-1.5B</b> = 1.2GB<br>
+    <b>Llama-3.2-1B</b> = 900MB · <b>Llama-3.2-3B</b> = 2GB<br>
+    <b style="color:var(--ok)">bisa stop di tengah & ganti model kapan aja.</b><br>
+    progress model yang udah ke-download tetep disimpen — balik ke model itu bakal resume.
   </div>
 </div>
 
@@ -338,11 +399,11 @@
 
 <script type="module">
 // ═══════════════════════════════════════════════════════════════
-//  REGAL AI v3 — persist + resume + auto-load
-//  - persistent storage request (biar browser gak evict cache)
-//  - auto-detect model di cache -> langsung load tanpa download
-//  - resume download kalau putus di tengah
-//  - status cache di UI
+//  REGAL AI v4 — download control + model switch
+//  - stop download di tengah (abort controller)
+//  - ganti model kapan aja (bahkan saat download)
+//  - resume progress per model (transformers.js cache handle ini)
+//  - speed + ETA
 // ═══════════════════════════════════════════════════════════════
 
 import {
@@ -354,8 +415,6 @@ import {
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
-// penting: biar cache gak di-flush sama service worker / cache lain
-env.useCustomCache = false;
 
 const MODELS = {
   'Qwen2.5-0.5B-Instruct (~400MB)':  'onnx-community/Qwen2.5-0.5B-Instruct',
@@ -364,7 +423,7 @@ const MODELS = {
   'Llama-3.2-3B-Instruct (~2GB)':    'onnx-community/Llama-3.2-3B-Instruct',
 };
 const DEFAULT_KEY = 'Qwen2.5-0.5B-Instruct (~400MB)';
-const STORAGE_KEY = 'regal_ai_state_v3';
+const STORAGE_KEY = 'regal_ai_state_v4';
 
 const DEFAULT_SYS = `Kamu adalah Regal, asisten AI santai, jujur, to the point.
 - Jawab dalam bahasa yang sama dengan user (indo -> indo).
@@ -381,6 +440,14 @@ let generating = false;
 let stopFlag = false;
 let chatHistory = [];
 
+// ── download control ──
+let downloadAbort = null;         // AbortController buat stop
+let downloadedBytes = 0;
+let lastProgressTime = 0;
+let lastProgressBytes = 0;
+let currentSpeed = 0;             // bytes/sec
+let aborted = false;
+
 const chatEl  = document.getElementById('chat');
 const inEl    = document.getElementById('in');
 const sendBtn = document.getElementById('sendBtn');
@@ -388,19 +455,24 @@ const dot     = document.getElementById('dot');
 const statusEl= document.getElementById('status');
 const loader  = document.getElementById('loader');
 const bar     = document.getElementById('bar');
+const progWrap= document.getElementById('progWrap');
 const info    = document.getElementById('info');
 const startBtn= document.getElementById('startBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const switchBtn = document.getElementById('switchBtn');
 const modelSel= document.getElementById('modelSelect');
 const cPersist= document.getElementById('cPersist');
 const cModel  = document.getElementById('cModel');
 const cSize   = document.getElementById('cSize');
 const cLast   = document.getElementById('cLast');
+const sSpeed  = document.getElementById('sSpeed');
+const sEta    = document.getElementById('sEta');
+const sFile   = document.getElementById('sFile');
 
-// ── load state dari localStorage ──
+// ── state persist ──
 function loadState() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
 }
 function saveState(patch) {
   const s = loadState();
@@ -408,7 +480,7 @@ function saveState(patch) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
 
-// ── isi dropdown model ──
+// ── isi dropdown ──
 for (const label of Object.keys(MODELS)) {
   const o = document.createElement('option');
   o.value = label; o.textContent = label;
@@ -444,12 +516,11 @@ function saveSettings() {
   hideSettings();
 }
 async function clearAllCache() {
-  if (!confirm('Hapus semua cache model + state? (harus download ulang dari 0)')) return;
+  if (!confirm('Hapus semua cache model + state?')) return;
   try {
     const keys = await caches.keys();
     for (const k of keys) await caches.delete(k);
-    // hapus juga entry dari CacheStorage transformer.js (IndexedDB)
-    const dbs = await indexedDB.databases?.() || [];
+    const dbs = (await indexedDB.databases?.()) || [];
     for (const db of dbs) {
       if (db.name && (db.name.includes('transformers') || db.name.includes('onnx'))) {
         indexedDB.deleteDatabase(db.name);
@@ -520,14 +591,6 @@ function updateMsgEl(el, text) {
   el.querySelector('.md').innerHTML = mdToHtml(text);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
-function addTyping() {
-  const div = document.createElement('div');
-  div.className = 'msg ai';
-  div.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
-  chatEl.appendChild(div);
-  chatEl.scrollTop = chatEl.scrollHeight;
-  return div;
-}
 function detectDevice() {
   if (navigator.gpu) return 'webgpu';
   if (navigator.hardwareConcurrency >= 4) return 'wasm-mt';
@@ -535,7 +598,6 @@ function detectDevice() {
 }
 
 // ── cache detection ──
-// cek apakah model ada di CacheStorage (transformers.js pakai browser cache API)
 async function isModelCached(repoId) {
   try {
     const keys = await caches.keys();
@@ -546,148 +608,278 @@ async function isModelCached(repoId) {
         if (r.url.includes(repoId)) return true;
       }
     }
-  } catch (e) { /* ignore */ }
-  // fallback: cek localStorage state
+  } catch (e) {}
   const s = loadState();
-  return s.modelKey === repoId || s.lastModelRepo === repoId;
+  return s.lastModelRepo === repoId && s.lastLoadSuccess;
 }
-
 async function getCacheInfo() {
   try {
     if (navigator.storage?.estimate) {
       const est = await navigator.storage.estimate();
-      return { quota: est.quota, usage: est.usage };
+      return est;
     }
   } catch (e) {}
   return null;
 }
-
 async function refreshCachePanel() {
-  // persistent storage status
   let persisted = false;
   try {
-    if (navigator.storage?.persisted) {
-      persisted = await navigator.storage.persisted();
-    }
+    if (navigator.storage?.persisted) persisted = await navigator.storage.persisted();
   } catch (e) {}
   cPersist.textContent = persisted ? '✓ granted' : '✗ not granted';
   cPersist.className = persisted ? 'ok' : 'warn';
 
-  // model cached
   const repoId = MODELS[modelSel.value];
   const cached = await isModelCached(repoId);
   cModel.textContent = cached ? `✓ ${repoId}` : '✗ belum';
   cModel.className = cached ? 'ok' : 'no';
 
-  // cache size
   const ci = await getCacheInfo();
-  if (ci) {
+  if (ci && ci.usage) {
     cSize.textContent = `${(ci.usage/1e6).toFixed(1)} MB / ${(ci.quota/1e6/1000).toFixed(1)} GB`;
   } else {
     cSize.textContent = '—';
   }
 
-  // last loaded
   const s = loadState();
   cLast.textContent = s.lastLoadedAt ? new Date(s.lastLoadedAt).toLocaleString() : '—';
-
   return cached;
 }
-
 async function requestPersist() {
   try {
     if (navigator.storage?.persist) {
-      const granted = await navigator.storage.persist();
-      console.log('[regal] persistent storage:', granted);
-      return granted;
+      return await navigator.storage.persist();
     }
-  } catch (e) { console.warn(e); }
+  } catch (e) {}
   return false;
+}
+
+// ── progress handler dengan speed & eta ──
+function onProgress(p) {
+  if (p.status === 'progress') {
+    const pct = p.progress || 0;
+    bar.style.width = Math.max(3, Math.min(99, pct)) + '%';
+    progWrap.classList.add('active');
+
+    const t = performance.now();
+    const loadedBytes = p.loaded || 0;
+
+    if (lastProgressTime > 0) {
+      const dt = (t - lastProgressTime) / 1000;
+      const db = loadedBytes - lastProgressBytes;
+      if (dt > 0.3 && db >= 0) {
+        currentSpeed = db / dt;
+        lastProgressTime = t;
+        lastProgressBytes = loadedBytes;
+      }
+    } else {
+      lastProgressTime = t;
+      lastProgressBytes = loadedBytes;
+    }
+
+    // speed display
+    if (currentSpeed > 0) {
+      const mbps = (currentSpeed / 1e6).toFixed(2);
+      sSpeed.textContent = `${mbps} MB/s`;
+    } else {
+      sSpeed.textContent = '—';
+    }
+
+    // eta
+    if (currentSpeed > 0 && p.total > 0) {
+      const remaining = (p.total - loadedBytes) / currentSpeed;
+      if (remaining < 60) sEta.textContent = `${remaining.toFixed(0)}s`;
+      else if (remaining < 3600) sEta.textContent = `${(remaining/60).toFixed(1)}m`;
+      else sEta.textContent = `${(remaining/3600).toFixed(1)}h`;
+    } else {
+      sEta.textContent = '—';
+    }
+
+    const loaded = (loadedBytes / 1e6).toFixed(1);
+    const total  = (p.total  / 1e6).toFixed(1);
+    sFile.textContent = p.file ? p.file.split('/').pop() : '—';
+    info.textContent = `${loaded}/${total} MB · ${pct.toFixed(1)}%`;
+  } else if (p.status === 'done') {
+    info.textContent = `${p.file} ✓`;
+    sFile.textContent = p.file ? p.file.split('/').pop() : '—';
+  } else if (p.status === 'initiate') {
+    info.textContent = `init ${p.file}...`;
+    sFile.textContent = p.file ? p.file.split('/').pop() : '—';
+  }
+}
+
+// ── cancel download ──
+function cancelDownload() {
+  if (!loading) return;
+  aborted = true;
+  if (downloadAbort) {
+    try { downloadAbort.abort(); } catch (e) {}
+  }
+  info.textContent = 'download dibatalkan.';
+  progWrap.classList.remove('active');
+  bar.style.width = '0%';
+  loading = false;
+  startBtn.disabled = false;
+  startBtn.textContent = 'LANJUT DOWNLOAD';
+  cancelBtn.style.display = 'none';
+  modelSel.disabled = false;
+  switchBtn.style.display = 'none';
+  sSpeed.textContent = '—';
+  sEta.textContent = '—';
 }
 
 // ── load ──
 async function loadModel() {
   if (loading || modelReady) return;
   loading = true;
+  aborted = false;
+  downloadAbort = new AbortController();
+  currentSpeed = 0;
+  lastProgressTime = 0;
+  lastProgressBytes = 0;
+
   startBtn.disabled = true;
-  modelSel.disabled = true;
+  modelSel.disabled = false; // biar bisa ganti
+  cancelBtn.style.display = 'inline-block';
+  switchBtn.style.display = 'inline-block';
   bar.style.width = '3%';
+  progWrap.classList.add('active');
 
   try {
     const key = modelSel.value;
     const repoId = MODELS[key];
 
-    // 1. minta persistent storage dulu (biar browser gak evict)
     info.textContent = 'meminta persistent storage...';
     await requestPersist();
 
-    // 2. cek apakah model udah di cache
     info.textContent = 'cek cache model...';
     const cached = await isModelCached(repoId);
     if (cached) {
-      info.textContent = 'model di cache — langsung load tanpa download.';
+      info.textContent = 'model di cache — langsung load.';
       bar.style.width = '20%';
-    } else {
-      info.textContent = `mulai download ${repoId}...`;
-      bar.style.width = '5%';
     }
 
-    // 3. tokenizer
     info.textContent = `tokenizer: ${repoId}`;
+    sFile.textContent = 'tokenizer.json';
+
+    // transformer.js gak expose abort signal, jadi kita pakai pola:
+    // simpan flag aborted. kalau user cancel, kita throw manual di progress callback.
+    const checkAbort = () => {
+      if (aborted) throw new Error('__ABORT__');
+    };
+
     tokenizer = await AutoTokenizer.from_pretrained(repoId, {
-      progress_callback: onProgress,
+      progress_callback: (p) => { onProgress(p); checkAbort(); },
     });
 
+    checkAbort();
     bar.style.width = '15%';
 
-    // 4. model
     info.textContent = `model: ${repoId}`;
+    sFile.textContent = 'model.onnx';
+
     model = await AutoModelForCausalLM.from_pretrained(repoId, {
       dtype: 'q4',
       device: navigator.gpu ? 'webgpu' : 'wasm',
-      progress_callback: onProgress,
+      progress_callback: (p) => { onProgress(p); checkAbort(); },
     });
+
+    checkAbort();
 
     modelReady = true;
     bar.style.width = '100%';
+    progWrap.classList.remove('active');
     info.textContent = 'model siap.';
     dot.classList.add('ready');
     statusEl.innerHTML = `otak: <b>${key.split(' (')[0]}</b> · device: <b>${detectDevice()}</b>`;
 
-    // simpan state
     saveState({
       modelKey: key,
       lastModelRepo: repoId,
       lastLoadedAt: Date.now(),
+      lastLoadSuccess: true,
     });
 
     setTimeout(() => loader.classList.add('hide'), 500);
-    addMsg('ai', `regal online. otak: **${key.split(' (')[0]}**, device: **${detectDevice()}**.\n\nkalau lu refresh halaman ini, model **gak akan download ulang** — langsung load dari cache.\n\ntanya apa aja, he.`, { copy: true });
+    addMsg('ai', `regal online. otak: **${key.split(' (')[0]}**, device: **${detectDevice()}**.\n\nkalau lu refresh, model gak akan download ulang — auto-load dari cache.\n\ntanya apa aja, he.`, { copy: true });
     inEl.focus();
   } catch (e) {
     console.error(e);
-    info.textContent = 'gagal load: ' + e.message;
-    dot.classList.add('err');
-    startBtn.disabled = false;
-    startBtn.textContent = 'COBA LAGI';
-    modelSel.disabled = false;
-    addMsg('ai', '[error] gagal load model:\n' + e.message);
+    if (e.message === '__ABORT__' || aborted) {
+      info.textContent = 'download dibatalkan oleh user.';
+      bar.style.width = '0%';
+      progWrap.classList.remove('active');
+      startBtn.disabled = false;
+      startBtn.textContent = 'LANJUT DOWNLOAD';
+      cancelBtn.style.display = 'none';
+      switchBtn.style.display = 'none';
+      modelSel.disabled = false;
+      sSpeed.textContent = '—';
+      sEta.textContent = '—';
+      // reset error
+      model = null;
+      tokenizer = null;
+    } else {
+      info.textContent = 'gagal: ' + e.message;
+      dot.classList.add('err');
+      startBtn.disabled = false;
+      startBtn.textContent = 'COBA LAGI';
+      cancelBtn.style.display = 'none';
+      switchBtn.style.display = 'none';
+      modelSel.disabled = false;
+      addMsg('ai', '[error] gagal load model:\n' + e.message);
+    }
   } finally {
     loading = false;
+    downloadAbort = null;
   }
 }
 
-function onProgress(p) {
-  if (p.status === 'progress') {
-    const pct = p.progress || 0;
-    bar.style.width = Math.max(3, Math.min(99, pct)) + '%';
-    const loaded = (p.loaded / 1e6).toFixed(1);
-    const total  = (p.total  / 1e6).toFixed(1);
-    info.textContent = `${p.file || ''} · ${loaded}/${total} MB · ${pct.toFixed(1)}%`;
-  } else if (p.status === 'done') {
-    info.textContent = `${p.file} ✓`;
-  } else if (p.status === 'initiate') {
-    info.textContent = `init ${p.file}...`;
+// ── switch model mid-download atau setelah ready ──
+async function switchModel() {
+  const newKey = modelSel.value;
+  const newRepo = MODELS[newKey];
+
+  if (newKey === loadState().modelKey && !modelReady) {
+    // sama, cuma lanjut
+    return;
+  }
+
+  const confirmMsg = modelReady
+    ? `Ganti ke "${newKey.split(' (')[0]}"? Model sekarang akan di-unload.`
+    : `Stop download sekarang, ganti ke "${newKey.split(' (')[0]}"?`;
+
+  if (!confirm(confirmMsg)) return;
+
+  // stop kalau sedang load
+  if (loading) {
+    cancelDownload();
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // unload model lama kalau ada
+  if (modelReady) {
+    try {
+      if (model && model.dispose) await model.dispose();
+    } catch (e) {}
+    model = null; tokenizer = null; modelReady = false;
+    dot.classList.remove('ready');
+    statusEl.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
+  }
+
+  saveState({ modelKey: newKey });
+  await refreshCachePanel();
+
+  const cached = await isModelCached(newRepo);
+  startBtn.textContent = cached ? 'LOAD MODEL (CACHE)' : 'MULAI DOWNLOAD';
+  startBtn.disabled = false;
+  info.textContent = cached
+    ? 'model ini udah di cache. klik load.'
+    : `belum di cache. klik buat download ${newRepo}.`;
+
+  // auto start kalau cached
+  if (cached) {
+    setTimeout(() => { if (!modelReady && !loading) loadModel(); }, 500);
   }
 }
 
@@ -699,8 +891,7 @@ async function generate(userText) {
     { role: 'user', content: userText },
   ];
   const chat = tokenizer.apply_chat_template(messages, {
-    tokenize: false,
-    add_generation_prompt: true,
+    tokenize: false, add_generation_prompt: true,
   });
   const inputs = await tokenizer(chat, { return_tensors: 'pt' });
 
@@ -710,8 +901,7 @@ async function generate(userText) {
   updateMsgEl(msgEl, '…');
 
   const streamer = new TextStreamer(tokenizer, {
-    skip_prompt: true,
-    skip_special_tokens: true,
+    skip_prompt: true, skip_special_tokens: true,
     callback_function: (token) => {
       fullText += token;
       updateMsgEl(msgEl, fullText);
@@ -745,19 +935,16 @@ async function send() {
   if (!modelReady) { addMsg('ai', 'model belum siap.'); return; }
 
   addMsg('user', text);
-  inEl.value = '';
-  inEl.style.height = 'auto';
+  inEl.value = ''; inEl.style.height = 'auto';
   sendBtn.disabled = true;
   sendBtn.textContent = 'STOP';
   sendBtn.onclick = () => { stopFlag = true; };
   generating = true;
   dot.classList.add('busy');
 
-  try {
-    await generate(text);
-  } catch (e) {
-    addMsg('ai', '[error] ' + e.message);
-  } finally {
+  try { await generate(text); }
+  catch (e) { addMsg('ai', '[error] ' + e.message); }
+  finally {
     sendBtn.disabled = false;
     sendBtn.textContent = 'KIRIM';
     sendBtn.onclick = () => send();
@@ -798,33 +985,36 @@ inEl.addEventListener('input', () => {
 // ── BOOT ──
 (async () => {
   statusEl.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
-
-  // panel cache refresh
   await refreshCachePanel();
 
-  // cek apakah model udah cached
   const cached = await isModelCached(MODELS[modelSel.value]);
-
   if (cached) {
-    startBtn.textContent = 'LOAD MODEL (DARI CACHE)';
+    startBtn.textContent = 'LOAD MODEL (CACHE)';
     startBtn.disabled = false;
-    info.textContent = 'model ada di cache. klik untuk load.';
-    // auto-load setelah 800ms
+    info.textContent = 'model ada di cache. klik atau tunggu auto-load.';
     setTimeout(() => { if (!modelReady && !loading) loadModel(); }, 800);
   } else {
-    startBtn.textContent = 'MULAI LOAD MODEL (DOWNLOAD)';
+    startBtn.textContent = 'MULAI DOWNLOAD';
     startBtn.disabled = false;
-    info.textContent = 'model belum di cache. klik untuk download.';
+    info.textContent = 'belum di cache. klik buat mulai download.';
   }
 
+  // tombol
+  startBtn.addEventListener('click', loadModel);
+  cancelBtn.addEventListener('click', cancelDownload);
+  switchBtn.addEventListener('click', switchModel);
+
+  // dropdown: simpan pilihan + refresh cache panel
   modelSel.addEventListener('change', async () => {
     saveState({ modelKey: modelSel.value });
     await refreshCachePanel();
-    const c = await isModelCached(MODELS[modelSel.value]);
-    startBtn.textContent = c ? 'LOAD MODEL (DARI CACHE)' : 'MULAI LOAD MODEL (DOWNLOAD)';
+    if (!modelReady) {
+      const c = await isModelCached(MODELS[modelSel.value]);
+      startBtn.textContent = c ? 'LOAD MODEL (CACHE)' : 'MULAI DOWNLOAD';
+      startBtn.disabled = false;
+      info.textContent = c ? 'model cached. klik load.' : `belum cached. klik download.`;
+    }
   });
-
-  startBtn.addEventListener('click', loadModel);
 })();
 
 window.send = send;
