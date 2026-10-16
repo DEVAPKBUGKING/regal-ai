@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REGAL AI — on-device</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #12121a;
+    --panel2: #1a1a26;
+    --border: #2a2a3a;
+    --accent: #ff2c8c;
+    --accent2: #b300ff;
+    --text: #e8e8f0;
+    --dim: #8a8a9a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 12px 18px;
+    background: linear-gradient(90deg, #0f0f18, #1a0f1a, #0f0f18);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .logo {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ff8800;
+    box-shadow: 0 0 8px #ff8800;
+    animation: pulse 1.6s infinite;
+  }
+  .dot.ready { background: #00ff88; box-shadow: 0 0 8px #00ff88; animation: none; }
+  .dot.err { background: #ff2c2c; box-shadow: 0 0 8px #ff2c2c; animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .status { font-size: 11px; color: var(--dim); margin-left: auto; }
+  .status b { color: #00ff88; }
+
+  /* loader */
+  #loader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity .4s;
+  }
+  #loader.hide { opacity: 0; pointer-events: none; }
+  .load-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+  }
+  .load-sub { font-size: 12px; color: var(--dim); margin-bottom: 24px; text-align: center; line-height: 1.6; }
+  .progress {
+    width: 320px;
+    max-width: 80vw;
+    height: 6px;
+    background: var(--panel2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .progress > div {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .2s;
+  }
+  .load-info { font-size: 11px; color: var(--dim); font-family: monospace; min-height: 16px; }
+  .load-note {
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 30px;
+    max-width: 380px;
+    text-align: center;
+    line-height: 1.6;
+    opacity: .7;
+  }
+  .loader-btn {
+    margin-top: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .loader-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #chat::-webkit-scrollbar { width: 8px; }
+  #chat::-webkit-scrollbar-track { background: var(--bg); }
+  #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    line-height: 1.55;
+    font-size: 14px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    animation: fadein .2s ease;
+  }
+  @keyframes fadein { from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)} }
+  .msg.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #2a1a3a, #3a1a4a);
+    border: 1px solid #4a2a5a;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.ai {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #16202a, #1a2a3a);
+    border: 1px solid #2a3a4a;
+    border-bottom-left-radius: 4px;
+  }
+  .msg.ai::before {
+    content: "J";
+    display: inline-block;
+    width: 20px; height: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    margin-right: 8px;
+    vertical-align: middle;
+    margin-top: -3px;
+  }
+  .msg .ts { display: block; font-size: 10px; color: var(--dim); margin-top: 6px; opacity: .6; }
+
+  .typing { display: inline-flex; gap: 3px; align-items: center; }
+  .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.4s infinite both; }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+  footer {
+    padding: 12px 16px 16px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  textarea {
+    flex: 1;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    max-height: 140px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  button#sendBtn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0 20px;
+    height: 44px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .5px;
+    cursor: pointer;
+    transition: transform .1s, opacity .15s;
+  }
+  button#sendBtn:hover { opacity: .9; }
+  button#sendBtn:active { transform: scale(.97); }
+  button#sendBtn:disabled { opacity: .4; cursor: not-allowed; }
+  .hint { font-size: 10px; color: var(--dim); margin-top: 6px; text-align: center; }
+  .hint kbd { background: var(--panel2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-family: inherit; }
+
+  .clear-btn {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    padding: 4px 10px;
+    height: auto;
+    font-size: 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .clear-btn:hover { color: var(--text); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="load-title">REGAL</div>
+  <div class="load-sub">
+    on-device transformer · no api · no server<br>
+    model di-load dari cache browser / huggingface
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="load-info" id="info">menunggu...</div>
+  <button class="loader-btn" id="startBtn">MULAI LOAD MODEL</button>
+  <div class="load-note">
+    model: Xenova/LaMini-Flan-T5-77M (quantized, ~70MB)<br>
+    alternatif besar: XENOVA/llama-2-7b-chat (butuh ~4GB)<br>
+    download sekali, abis itu offline. cache di browser.
+  </div>
+</div>
+
+<header>
+  <div class="dot" id="dot"></div>
+  <div class="logo">REGAL</div>
+  <div class="status" id="status">otak: <b>—</b> · device: <b>—</b></div>
+  <button class="clear-btn" onclick="clearChat()">clear</button>
+</header>
+
+<div id="chat"></div>
+
+<footer>
+  <div class="input-row">
+    <textarea id="in" rows="1" placeholder="tulis pesan... (shift+enter = newline)"></textarea>
+    <button id="sendBtn" onclick="send()">KIRIM</button>
+  </div>
+  <div class="hint"><kbd>enter</kbd> kirim · <kbd>shift+enter</kbd> baris baru</div>
+</footer>
+
+<script type="module">
+// ═══════════════════════════════════════════════════════════════
+//  REGAL AI — otak transformer jalan on-device (browser).
+//  pake transformers.js (wasm backend) + model huggingface.
+//  gak ada api server, gak ada backend. semua di sisi klien.
+// ═══════════════════════════════════════════════════════════════
+
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+// konfigurasi: model di-cache di browser, jalan offline setelah load pertama
+env.allowLocalModels = false;
+env.useBrowserCache  = true;
+
+// daftar model — dari kecil ke gede
+const MODELS = {
+  'LaMini-Flan-T5-77M':   'Xenova/LaMini-Flan-T5-77M',        // ~70MB  — cepat, jawaban pendek
+  'LaMini-Flan-T5-248M':  'Xenova/LaMini-Flan-T5-248M',       // ~250MB — kualitas lebih baik
+  'Flan-T5-Base':         'Xenova/flan-t5-base',               // ~250MB
+  'Flan-T5-Large':        'Xenova/flan-t5-large',              // ~800MB
+  'TinyLlama-1.1B':       'Xenova/TinyLlama-1.1B-Chat-v1.0',   // ~700MB — chat model, lebih bagus
+};
+const DEFAULT_MODEL_KEY = 'LaMini-Flan-T5-77M';
+
+const chatEl  = document.getElementById('chat');
+const inEl    = document.getElementById('in');
+const sendBtn = document.getElementById('sendBtn');
+const dot     = document.getElementById('dot');
+const status  = document.getElementById('status');
+const loader  = document.getElementById('loader');
+const bar     = document.getElementById('bar');
+const info    = document.getElementById('info');
+const startBtn= document.getElementById('startBtn');
+
+let generator = null;
+let modelReady = false;
+let loading = false;
+let generating = false;
+
+// ── util ──
+function now() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function addMsg(role, text) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = esc(text) + '<span class="ts">' + now() + '</span>';
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return div;
+}
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return div;
+}
+
+// ── device detection ──
+function detectDevice() {
+  if (navigator.gpu) return 'webgpu';
+  if (navigator.hardwareConcurrency >= 4) return 'wasm-multithread';
+  return 'wasm-single';
+}
+
+// ── load model ──
+async function loadModel() {
+  if (loading || modelReady) return;
+  loading = true;
+  startBtn.disabled = true;
+  info.textContent = 'menginisialisasi runtime...';
+  bar.style.width = '5%';
+
+  try {
+    const modelId = MODELS[DEFAULT_MODEL_KEY];
+    info.textContent = `loading ${modelId}...`;
+
+    generator = await pipeline('text2text-generation', modelId, {
+      quantized: true,
+      progress_callback: (p) => {
+        if (p.status === 'progress') {
+          const pct = p.progress || 0;
+          bar.style.width = Math.max(5, pct) + '%';
+          const loaded = (p.loaded / 1e6).toFixed(1);
+          const total  = (p.total  / 1e6).toFixed(1);
+          info.textContent = `${p.file || ''} · ${loaded}/${total} MB · ${pct.toFixed(1)}%`;
+        } else if (p.status === 'done') {
+          info.textContent = `${p.file} ✓`;
+        } else if (p.status === 'ready') {
+          info.textContent = 'model siap.';
+        } else if (p.status === 'initiate') {
+          info.textContent = `init ${p.file}...`;
+        }
+      },
+    });
+
+    modelReady = true;
+    bar.style.width = '100%';
+    info.textContent = 'model siap.';
+    dot.classList.add('ready');
+    status.innerHTML = `otak: <b>${DEFAULT_MODEL_KEY}</b> · device: <b>${detectDevice()}</b>`;
+
+    setTimeout(() => loader.classList.add('hide'), 600);
+    addMsg('ai', `regal online. otak: ${DEFAULT_MODEL_KEY}. device: ${detectDevice()}.\n\nsemua inference jalan di hp lu, gak ada yang dikirim ke server. tanya apa aja, he.`);
+    inEl.focus();
+  } catch (e) {
+    console.error(e);
+    info.textContent = 'gagal load: ' + e.message;
+    dot.classList.add('err');
+    startBtn.disabled = false;
+    startBtn.textContent = 'COBA LAGI';
+    addMsg('ai', '[error] gagal load model:\n' + e.message);
+  } finally {
+    loading = false;
+  }
+}
+
+// ── generate ──
+async function generateReply(userText) {
+  // prompt template buat instruct model
+  const prompt = `User: ${userText}\nAssistant:`;
+  const out = await generator(prompt, {
+    max_new_tokens: 256,
+    temperature: 0.7,
+    top_p: 0.9,
+    repetition_penalty: 1.15,
+    do_sample: true,
+  });
+  let text = out[0].generated_text || '';
+  // bersihin kalau ada prefix yang nyangkut
+  text = text.replace(/^Assistant:\s*/i, '').trim();
+  return text || '(kosong)';
+}
+
+// ── send flow ──
+async function send() {
+  if (generating) return;
+  const text = inEl.value.trim();
+  if (!text) return;
+
+  addMsg('user', text);
+  inEl.value = '';
+  inEl.style.height = 'auto';
+  sendBtn.disabled = true;
+  generating = true;
+
+  const typingEl = addTyping();
+
+  try {
+    if (!modelReady) {
+      typingEl.remove();
+      addMsg('ai', 'model belum siap. tunggu sampai loading selesai.');
+      sendBtn.disabled = false; generating = false;
+      return;
+    }
+    const reply = await generateReply(text);
+    typingEl.remove();
+    addMsg('ai', reply);
+  } catch (e) {
+    typingEl.remove();
+    addMsg('ai', '[error] ' + e.message);
+  } finally {
+    sendBtn.disabled = false;
+    generating = false;
+    inEl.focus();
+  }
+}
+
+function clearChat() {
+  chatEl.innerHTML = '';
+  addMsg('ai', 'chat di-clear, he.');
+}
+
+// ── input handling ──
+inEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+inEl.addEventListener('input', () => {
+  inEl.style.height = 'auto';
+  inEl.style.height = Math.min(inEl.scrollHeight, 140) + 'px';
+});
+
+// ── boot ──
+status.innerHTML = `otak: <b>—</b> · device: <b>${detectDevice()}</b>`;
+startBtn.addEventListener('click', loadModel);
+
+// auto-start kalau mau (comment kalau gak mau)
+// startBtn.click();
+</script>
+
+</body>
+</html>
