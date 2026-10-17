@@ -6,409 +6,227 @@
 <title>REGAL VIDEO</title>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --panel: #12121a;
-    --panel2: #1a1a26;
-    --border: #2a2a3a;
-    --accent: #ff2c8c;
-    --accent2: #b300ff;
-    --text: #e8e8f0;
-    --dim: #8a8a9a;
-    --ok: #00ff88;
-    --err: #ff2c2c;
-    --warn: #ffb020;
+    --bg:#0a0a0f; --panel:#12121a; --panel2:#1a1a26;
+    --border:#2a2a3a; --accent:#ff2c8c; --accent2:#b300ff;
+    --text:#e8e8f0; --dim:#8a8a9a; --ok:#00ff88; --err:#ff2c2c; --warn:#ffb020;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
-    overflow-x: hidden;
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system, 'Segoe UI', Roboto, sans-serif;
+    overflow-x:hidden;
   }
   header {
-    padding: 12px 18px;
-    background: linear-gradient(90deg, #0f0f18, #1a0f1a, #0f0f18);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    flex-wrap: wrap;
+    padding:12px 18px;
+    background:linear-gradient(90deg,#0f0f18,#1a0f1a,#0f0f18);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:12px;
+    position:sticky; top:0; z-index:10; flex-wrap:wrap;
   }
   .logo {
-    font-weight: 800;
-    font-size: 18px;
-    letter-spacing: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    cursor: pointer;
+    font-weight:800; font-size:18px; letter-spacing:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    cursor:pointer;
   }
-  .tab-bar { display: flex; gap: 6px; }
+  .tab-bar { display:flex; gap:6px; }
   .tab {
-    padding: 7px 14px;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--dim);
-    font-size: 12px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all .15s;
+    padding:7px 14px; background:var(--panel2);
+    border:1px solid var(--border); border-radius:8px;
+    color:var(--dim); font-size:12px; cursor:pointer; font-family:inherit;
+    transition:all .15s;
   }
   .tab.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    border-color: transparent;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff; border-color:transparent;
   }
-  .spacer { flex: 1; }
-  .storage-info { font-size: 10px; color: var(--dim); font-family: monospace; }
-  .storage-info b { color: var(--ok); }
+  .spacer { flex:1; }
+  .proxy-status { font-size:10px; font-family:monospace; color:var(--dim); }
+  .proxy-status b { color:var(--ok); }
+  .proxy-status b.err { color:var(--err); }
 
-  .page { display: none; padding: 20px 16px; max-width: 1100px; margin: 0 auto; }
-  .page.active { display: block; }
+  .page { display:none; padding:20px 16px; max-width:1100px; margin:0 auto; }
+  .page.active { display:block; }
 
-  /* ── DOWNLOAD ── */
   .dl-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    max-width: 620px;
-    margin: 0 auto;
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:14px; padding:20px; max-width:620px; margin:0 auto;
   }
   .dl-card h1 {
-    font-size: 20px;
-    margin-bottom: 6px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    font-size:20px; margin-bottom:6px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .dl-card p.sub { font-size: 12px; color: var(--dim); margin-bottom: 18px; line-height: 1.6; }
-  .field { margin-bottom: 14px; }
+  .dl-card p.sub { font-size:12px; color:var(--dim); margin-bottom:18px; line-height:1.6; }
+  .field { margin-bottom:14px; }
   .field label {
-    display: block;
-    font-size: 11px;
-    color: var(--dim);
-    margin-bottom: 6px;
-    letter-spacing: .3px;
-    text-transform: uppercase;
+    display:block; font-size:11px; color:var(--dim);
+    margin-bottom:6px; text-transform:uppercase; letter-spacing:.3px;
   }
   .field input {
-    width: 100%;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 11px 13px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color .15s;
+    width:100%; background:var(--panel2);
+    border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; color:var(--text);
+    font-size:13px; font-family:inherit; outline:none;
   }
-  .field input:focus { border-color: var(--accent); }
-  .field .hint { font-size: 10px; color: var(--dim); margin-top: 5px; line-height: 1.5; }
-  .field .hint code {
-    background: var(--panel2); padding: 1px 5px;
-    border-radius: 4px; font-family: monospace; font-size: 10px;
-  }
+  .field input:focus { border-color:var(--accent); }
+  .field .hint { font-size:10px; color:var(--dim); margin-top:5px; line-height:1.5; }
+
   .btn {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 11px 20px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: .3px;
-    cursor: pointer;
-    transition: transform .1s, opacity .15s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff; border:none; border-radius:10px;
+    padding:11px 20px; font-family:inherit; font-weight:700;
+    font-size:13px; cursor:pointer;
+    transition:transform .1s, opacity .15s;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
   }
-  .btn:hover:not(:disabled) { opacity: .9; }
-  .btn:active:not(:disabled) { transform: scale(.98); }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
-  .btn.full { width: 100%; }
-  .btn.ghost {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-weight: 500;
-  }
-  .btn.ghost:hover { border-color: var(--accent); }
+  .btn:hover:not(:disabled) { opacity:.9; }
+  .btn:active:not(:disabled) { transform:scale(.98); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn.full { width:100%; }
+  .btn.ghost { background:transparent; border:1px solid var(--border); color:var(--text); font-weight:500; }
+  .btn.ghost:hover { border-color:var(--accent); }
 
   .dl-progress {
-    margin-top: 14px;
-    padding: 12px;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    display: none;
+    margin-top:14px; padding:12px;
+    background:var(--panel2); border:1px solid var(--border);
+    border-radius:10px; display:none;
   }
-  .dl-progress.show { display: block; }
+  .dl-progress.show { display:block; }
   .dl-progress .name {
-    font-size: 11px;
-    color: var(--text);
-    margin-bottom: 8px;
-    word-break: break-all;
-    font-family: monospace;
+    font-size:11px; color:var(--text); margin-bottom:8px;
+    word-break:break-all; font-family:monospace;
   }
-  .bar-wrap {
-    height: 8px;
-    background: var(--bg);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
+  .bar-wrap { height:8px; background:var(--bg); border-radius:4px; overflow:hidden; margin-bottom:8px; }
   .bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    transition: width .2s;
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    transition:width .2s;
   }
   .dl-stats {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    color: var(--dim);
-    font-family: monospace;
-    flex-wrap: wrap;
-    gap: 6px;
+    display:flex; justify-content:space-between;
+    font-size:10px; color:var(--dim); font-family:monospace;
+    flex-wrap:wrap; gap:6px;
   }
   .status-msg {
-    margin-top: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    line-height: 1.6;
-    display: none;
-    word-break: break-word;
+    margin-top:12px; padding:10px 12px; border-radius:8px;
+    font-size:12px; line-height:1.6; display:none;
+    word-break:break-word;
   }
-  .status-msg.show { display: block; }
-  .status-msg.ok { background: rgba(0,255,136,.08); border: 1px solid rgba(0,255,136,.3); color: var(--ok); }
-  .status-msg.err { background: rgba(255,44,44,.08); border: 1px solid rgba(255,44,44,.3); color: var(--err); }
-  .status-msg.warn { background: rgba(255,176,32,.08); border: 1px solid rgba(255,176,32,.3); color: var(--warn); }
-  .status-msg code {
-    background: rgba(0,0,0,.3); padding: 1px 5px;
-    border-radius: 4px; font-family: monospace; font-size: 11px;
-  }
+  .status-msg.show { display:block; }
+  .status-msg.ok { background:rgba(0,255,136,.08); border:1px solid rgba(0,255,136,.3); color:var(--ok); }
+  .status-msg.err { background:rgba(255,44,44,.08); border:1px solid rgba(255,44,44,.3); color:var(--err); }
+  .status-msg.warn { background:rgba(255,176,32,.08); border:1px solid rgba(255,176,32,.3); color:var(--warn); }
+  .status-msg code { background:rgba(0,0,0,.3); padding:1px 5px; border-radius:4px; font-family:monospace; font-size:11px; }
 
-  /* ── LIBRARY ── */
-  .lib-header {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-  }
-  .search-box {
-    flex: 1;
-    min-width: 200px;
-    position: relative;
-  }
+  .lib-header { display:flex; gap:10px; align-items:center; margin-bottom:18px; flex-wrap:wrap; }
+  .search-box { flex:1; min-width:200px; position:relative; }
   .search-box input {
-    width: 100%;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 11px 13px 11px 38px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: inherit;
-    outline: none;
+    width:100%; background:var(--panel2);
+    border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px 11px 38px; color:var(--text);
+    font-size:13px; font-family:inherit; outline:none;
   }
-  .search-box input:focus { border-color: var(--accent); }
+  .search-box input:focus { border-color:var(--accent); }
   .search-box::before {
-    content: "🔍";
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 13px;
-    opacity: .5;
-    pointer-events: none;
+    content:"🔍"; position:absolute; left:12px; top:50%;
+    transform:translateY(-50%); font-size:13px; opacity:.5;
+    pointer-events:none;
   }
-  .lib-count { font-size: 11px; color: var(--dim); white-space: nowrap; }
+  .lib-count { font-size:11px; color:var(--dim); white-space:nowrap; }
 
   .video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+    gap:14px;
   }
   .video-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform .15s, border-color .15s;
-    position: relative;
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden; cursor:pointer;
+    transition:transform .15s, border-color .15s; position:relative;
   }
-  .video-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent);
-  }
+  .video-card:hover { transform:translateY(-2px); border-color:var(--accent); }
   .thumb {
-    aspect-ratio: 16 / 9;
-    background: #000;
-    position: relative;
-    overflow: hidden;
+    aspect-ratio:16/9; background:#000; position:relative; overflow:hidden;
   }
   .thumb video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    width:100%; height:100%; object-fit:cover; display:block;
   }
   .thumb .play-icon {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.25);
-    opacity: 0;
-    transition: opacity .15s;
-    font-size: 36px;
-    color: #fff;
-    text-shadow: 0 2px 8px rgba(0,0,0,.8);
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.25); opacity:0; transition:opacity .15s;
+    font-size:36px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.8);
   }
-  .video-card:hover .thumb .play-icon { opacity: 1; }
-  .card-info { padding: 9px 11px; }
+  .video-card:hover .thumb .play-icon { opacity:1; }
+  .card-info { padding:9px 11px; }
   .card-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 3px;
+    font-size:12px; font-weight:600; color:var(--text);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-bottom:3px;
   }
   .card-meta {
-    font-size: 9.5px;
-    color: var(--dim);
-    display: flex;
-    justify-content: space-between;
-    gap: 6px;
+    font-size:9.5px; color:var(--dim);
+    display:flex; justify-content:space-between; gap:6px;
   }
   .card-del {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: rgba(0,0,0,.7);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity .15s, background .15s;
-    z-index: 2;
-    font-family: inherit;
+    position:absolute; top:8px; right:8px;
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,.7); color:#fff; border:none;
+    cursor:pointer; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .15s, background .15s;
+    z-index:2; font-family:inherit;
   }
-  .video-card:hover .card-del { opacity: 1; }
-  .card-del:hover { background: var(--err); }
+  .video-card:hover .card-del { opacity:1; }
+  .card-del:hover { background:var(--err); }
 
-  .empty-state { text-align: center; padding: 50px 20px; color: var(--dim); }
-  .empty-state .icon { font-size: 44px; margin-bottom: 14px; opacity: .4; }
-  .empty-state h3 { font-size: 15px; margin-bottom: 6px; color: var(--text); }
-  .empty-state p { font-size: 12px; line-height: 1.6; }
+  .empty-state { text-align:center; padding:50px 20px; color:var(--dim); }
+  .empty-state .icon { font-size:44px; margin-bottom:14px; opacity:.4; }
+  .empty-state h3 { font-size:15px; margin-bottom:6px; color:var(--text); }
+  .empty-state p { font-size:12px; line-height:1.6; }
 
-  /* ── PLAYER ── */
   .modal {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.95);
-    z-index: 100;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 12px;
+    position:fixed; inset:0; background:rgba(0,0,0,.95);
+    z-index:100; display:none; align-items:center; justify-content:center;
+    padding:12px;
   }
-  .modal.show { display: flex; }
+  .modal.show { display:flex; }
   .player-wrap {
-    width: 100%;
-    max-width: 1000px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    max-height: 95vh;
+    width:100%; max-width:1000px;
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden;
+    display:flex; flex-direction:column; max-height:95vh;
   }
   .player-header {
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--border);
+    padding:10px 14px; display:flex; align-items:center; gap:10px;
+    border-bottom:1px solid var(--border);
   }
   .player-title {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex:1; font-size:13px; font-weight:600;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .player-close {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 5px 11px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 11px;
+    background:transparent; border:1px solid var(--border);
+    color:var(--text); padding:5px 11px; border-radius:7px;
+    cursor:pointer; font-family:inherit; font-size:11px;
   }
-  .player-close:hover { border-color: var(--err); color: var(--err); }
+  .player-close:hover { border-color:var(--err); color:var(--err); }
   .player-wrap video {
-    width: 100%;
-    max-height: 82vh;
-    background: #000;
-    display: block;
+    width:100%; max-height:82vh; background:#000; display:block;
   }
 
-  /* ── TOAST ── */
   .toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 11px 18px;
-    font-size: 12px;
-    z-index: 200;
-    transition: transform .3s;
-    max-width: 90vw;
+    position:fixed; bottom:20px; left:50%;
+    transform:translateX(-50%) translateY(100px);
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:11px 18px;
+    font-size:12px; z-index:200;
+    transition:transform .3s; max-width:90vw;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.ok { border-color: var(--ok); color: var(--ok); }
-  .toast.err { border-color: var(--err); color: var(--err); }
-
-  @media (max-width: 600px) {
-    .video-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-    .dl-card { padding: 16px; }
-    header { padding: 10px 12px; }
-    .tab { padding: 6px 11px; font-size: 11px; }
-    .logo { font-size: 15px; }
-  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.ok { border-color:var(--ok); color:var(--ok); }
+  .toast.err { border-color:var(--err); color:var(--err); }
 </style>
 </head>
 <body>
@@ -420,22 +238,18 @@
     <button class="tab" id="tabLib" onclick="switchPage('lib')">📼 Library</button>
   </div>
   <div class="spacer"></div>
-  <div class="storage-info" id="storageInfo">storage: <b>—</b></div>
+  <div class="proxy-status" id="proxyStatus">proxy: <b>cek...</b></div>
 </header>
 
-<!-- PAGE 1: DOWNLOAD -->
 <div class="page active" id="pageDl">
   <div class="dl-card">
     <h1>Ambil Video</h1>
-    <p class="sub">Paste link video, kasih nama, simpan ke library lokal. Semua tersimpan di hp lu sendiri — gak ada cloud, gak ada server, gak butuh bayar.</p>
+    <p class="sub">Paste link apapun yang ada video-nya. Proxy lokal di termux lu yang download, terus simpen ke library.</p>
 
     <div class="field">
-      <label>1. Link video</label>
-      <input type="text" id="urlInput" placeholder="https://contoh.com/video.mp4">
-      <div class="hint">
-        Kalau link-nya bukan <code>.mp4</code> langsung, browser bakal coba deteksi otomatis dari halaman.<br>
-        Kalau gagal (CORS/blocked), buka devtools → Network → filter <code>.mp4</code> → copy url → paste di sini.
-      </div>
+      <label>1. Link video / halaman</label>
+      <input type="text" id="urlInput" placeholder="https://situs.com/xyz  atau  https://situs.com/video.mp4">
+      <div class="hint">Bisa link halaman (kayak slicedirev) atau link .mp4 langsung. Proxy bakal coba ekstrak.</div>
     </div>
 
     <div class="field">
@@ -462,18 +276,16 @@
   </div>
 </div>
 
-<!-- PAGE 2: LIBRARY -->
 <div class="page" id="pageLib">
   <div class="lib-header">
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="cari video berdasarkan nama..." oninput="renderLibrary()">
+      <input type="text" id="searchInput" placeholder="cari video..." oninput="renderLibrary()">
     </div>
     <div class="lib-count" id="libCount">0 video</div>
   </div>
   <div id="libContent"></div>
 </div>
 
-<!-- PLAYER MODAL -->
 <div class="modal" id="playerModal" onclick="if(event.target===this) closePlayer()">
   <div class="player-wrap">
     <div class="player-header">
@@ -487,10 +299,11 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  REGAL VIDEO — local library (IndexedDB)
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  REGAL VIDEO — client-side, proxy di localhost:8888
+// ═══════════════════════════════════════════
 
+const PROXY = 'http://localhost:8888';
 const DB_NAME = 'regal_video_db';
 const DB_VERSION = 1;
 const STORE = 'videos';
@@ -500,68 +313,52 @@ let currentAbort = null;
 let videoCache = [];
 let objectUrls = new Map();
 
-// ── IndexedDB ──
 function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, DB_VERSION);
+    r.onupgradeneeded = (e) => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains(STORE)) {
-        const store = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
-        store.createIndex('name', 'name', { unique: false });
-        store.createIndex('createdAt', 'createdAt', { unique: false });
+        const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        s.createIndex('name', 'name');
       }
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
   });
 }
 function dbAdd(rec) {
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const tx = db.transaction(STORE, 'readwrite');
-    const req = tx.objectStore(STORE).add(rec);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+    const r = tx.objectStore(STORE).add(rec);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
   });
 }
 function dbGetAll() {
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const tx = db.transaction(STORE, 'readonly');
-    const req = tx.objectStore(STORE).getAll();
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+    const r = tx.objectStore(STORE).getAll();
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
   });
 }
 function dbDelete(id) {
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const tx = db.transaction(STORE, 'readwrite');
-    const req = tx.objectStore(STORE).delete(id);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    const r = tx.objectStore(STORE).delete(id);
+    r.onsuccess = () => res();
+    r.onerror = () => rej(r.error);
   });
 }
 
-// ── storage persistent ──
 async function requestPersistent() {
   try {
-    if (navigator.storage && navigator.storage.persist) {
-      return await navigator.storage.persist();
-    }
+    if (navigator.storage?.persist) return await navigator.storage.persist();
   } catch (e) {}
   return false;
 }
-async function updateStorageInfo() {
-  try {
-    if (navigator.storage && navigator.storage.estimate) {
-      const est = await navigator.storage.estimate();
-      const used = (est.usage / 1e6).toFixed(1);
-      const quota = (est.quota / 1e9).toFixed(1);
-      document.getElementById('storageInfo').innerHTML = `storage: <b>${used} MB</b> / ${quota} GB`;
-    }
-  } catch (e) {}
-}
 
-// ── toast / status ──
 let toastTimer = null;
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
@@ -577,7 +374,6 @@ function setStatus(msg, type = '') {
   el.innerHTML = msg;
 }
 
-// ── helpers ──
 function fmtBytes(b) {
   if (b < 1024) return b + ' B';
   if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
@@ -591,18 +387,16 @@ function fmtTime(s) {
   return (s/3600).toFixed(1) + 'h';
 }
 function fmtDate(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' });
+  return new Date(ts).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'2-digit' });
 }
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── page switch ──
-function switchPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if (page === 'dl') {
+function switchPage(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  if (p === 'dl') {
     document.getElementById('pageDl').classList.add('active');
     document.getElementById('tabDl').classList.add('active');
   } else {
@@ -612,75 +406,50 @@ function switchPage(page) {
   }
 }
 
-// ═══════════════════════════════════════════
-//  DOWNLOAD
-// ═══════════════════════════════════════════
-
-async function tryExtractVideoUrl(pageUrl) {
-  const res = await fetch(pageUrl, { mode: 'cors' });
-  const html = await res.text();
-  const patterns = [
-    /<video[^>]+src=["']([^"']+)["']/i,
-    /<source[^>]+src=["']([^"']+)["']/i,
-    /["']([^"']+\.mp4(?:\?[^"']*)?)["']/i,
-    /["']([^"']+\.webm(?:\?[^"']*)?)["']/i,
-    /["']([^"']+\.m3u8(?:\?[^"']*)?)["']/i,
-  ];
-  for (const p of patterns) {
-    const m = html.match(p);
-    if (m) return new URL(m[1], pageUrl).href;
-  }
-  return null;
+// ── cek proxy hidup ──
+async function checkProxy() {
+  const el = document.getElementById('proxyStatus');
+  try {
+    const r = await fetch(PROXY + '/api/ping', { cache: 'no-store' });
+    const j = await r.json();
+    if (j.ok) {
+      el.innerHTML = `proxy: <b>online</b>${j.ytdlp ? ' · yt-dlp ✓' : ' · yt-dlp ✗'}`;
+      return true;
+    }
+  } catch (e) {}
+  el.innerHTML = 'proxy: <b class="err">offline</b>';
+  return false;
 }
 
+// ── download ──
 async function startDownload() {
-  const urlInput = document.getElementById('urlInput');
-  const nameInput = document.getElementById('nameInput');
-  const url = urlInput.value.trim();
-  const name = nameInput.value.trim() || 'video_' + Date.now();
+  const url = document.getElementById('urlInput').value.trim();
+  const name = document.getElementById('nameInput').value.trim() || 'video_' + Date.now();
+  if (!url) { setStatus('Isi link dulu.', 'err'); return; }
 
-  if (!url) { setStatus('Isi link video dulu.', 'err'); return; }
+  const proxyOk = await checkProxy();
+  if (!proxyOk) {
+    setStatus('Proxy offline. Jalanin <code>python server.py</code> di termux dulu.', 'err');
+    return;
+  }
 
-  setStatus('Menghubungi server...', 'warn');
   document.getElementById('dlBtn').disabled = true;
+  setStatus('Probing video...', 'warn');
 
   try {
-    let finalUrl = url;
-    let isDirectVideo = /\.(mp4|webm|mov|m4v|mkv|ogv)(\?|$)/i.test(url);
-
-    if (!isDirectVideo) {
-      setStatus('Bukan file video langsung. Coba deteksi otomatis...', 'warn');
-      try {
-        const extracted = await tryExtractVideoUrl(url);
-        if (extracted) {
-          finalUrl = extracted;
-          isDirectVideo = true;
-          setStatus('Ketemu url video: <code>' + esc(extracted) + '</code>', 'ok');
-        } else {
-          throw new Error('Tidak ada tag video/source di halaman itu.');
-        }
-      } catch (extractErr) {
-        setStatus(
-          '<b>Gagal deteksi otomatis.</b><br>' +
-          'Alasan: ' + esc(extractErr.message) + '<br><br>' +
-          '<b>Cara manual (paling reliable):</b><br>' +
-          '1. Buka halaman video di tab baru<br>' +
-          '2. Buka DevTools → tab Network (F12)<br>' +
-          '3. Filter: <code>.mp4</code> atau <code>media</code><br>' +
-          '4. Play videonya sebentar<br>' +
-          '5. Cari request ukuran gede → klik kanan → Copy URL<br>' +
-          '6. Paste ke kolom link di sini',
-          'err'
-        );
-        document.getElementById('dlBtn').disabled = false;
-        return;
-      }
+    // minta proxy ekstrak url video aslinya
+    const probeResp = await fetch(PROXY + '/api/probe?url=' + encodeURIComponent(url));
+    const probeJson = await probeResp.json();
+    if (!probeJson.ok) {
+      throw new Error(probeJson.error || 'gagal probe');
     }
+    setStatus('Ketemu video (' + probeJson.method + '). Mulai download...', 'ok');
 
-    setStatus('Mulai download...', 'ok');
+    // download via proxy streaming
     currentAbort = new AbortController();
-    const res = await fetch(finalUrl, { signal: currentAbort.signal, mode: 'cors' });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+    const dlUrl = PROXY + '/api/download?url=' + encodeURIComponent(url);
+    const res = await fetch(dlUrl, { signal: currentAbort.signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
 
     const total = parseInt(res.headers.get('content-length') || '0', 10);
     const reader = res.body.getReader();
@@ -691,7 +460,7 @@ async function startDownload() {
 
     const prog = document.getElementById('dlProgress');
     prog.classList.add('show');
-    document.getElementById('dlName').textContent = name + ' — ' + finalUrl;
+    document.getElementById('dlName').textContent = name + ' — ' + probeJson.url.slice(0, 60);
     const bar = document.getElementById('dlBar');
     const spd = document.getElementById('dlSpeed');
     const sz = document.getElementById('dlSize');
@@ -707,12 +476,9 @@ async function startDownload() {
       if (t - lastTime > 250) {
         const dt = (t - lastTime) / 1000;
         const speed = (received - lastBytes) / dt;
-        lastTime = t;
-        lastBytes = received;
-
+        lastTime = t; lastBytes = received;
         if (total > 0) {
-          const pct = (received / total) * 100;
-          bar.style.width = pct + '%';
+          bar.style.width = ((received/total)*100) + '%';
           sz.textContent = fmtBytes(received) + ' / ' + fmtBytes(total);
           eta.textContent = 'ETA ' + fmtTime((total - received) / speed);
         } else {
@@ -722,45 +488,24 @@ async function startDownload() {
         spd.textContent = fmtBytes(speed) + '/s';
       }
     }
-
     bar.style.width = '100%';
-    setStatus('Menyimpan ke library...', 'warn');
 
-    const contentType = res.headers.get('content-type') || 'video/mp4';
-    const blob = new Blob(chunks, { type: contentType });
-
+    setStatus('Menyimpan...', 'warn');
+    const blob = new Blob(chunks, { type: 'video/mp4' });
     await dbAdd({
-      name: name,
-      url: finalUrl,
-      sourceUrl: url,
-      blob: blob,
-      size: blob.size,
-      type: contentType,
-      createdAt: Date.now(),
+      name, url: probeJson.url, sourceUrl: url,
+      blob, size: blob.size, type: 'video/mp4', createdAt: Date.now(),
     });
 
     setStatus('✓ Tersimpan! Cek tab Library.', 'ok');
     toast('"' + name + '" tersimpan', 'ok');
-    urlInput.value = '';
-    nameInput.value = '';
-
-    setTimeout(() => {
-      prog.classList.remove('show');
-      bar.style.width = '0%';
-    }, 2000);
-
-    await updateStorageInfo();
+    document.getElementById('urlInput').value = '';
+    document.getElementById('nameInput').value = '';
+    setTimeout(() => { prog.classList.remove('show'); bar.style.width = '0%'; }, 2000);
   } catch (e) {
     console.error(e);
-    if (e.name === 'AbortError') {
-      setStatus('Download dibatalkan.', 'warn');
-    } else {
-      let hint = '';
-      if (e.message.includes('Failed to fetch') || /cors/i.test(e.message)) {
-        hint = '<br><br><b>Ini CORS block.</b> Server video gak izinin browser lain ambil file-nya langsung.<br>Solusi: pakai cara manual (copy url .mp4 dari devtools → paste).';
-      }
-      setStatus('<b>Gagal:</b> ' + esc(e.message) + hint, 'err');
-    }
+    if (e.name === 'AbortError') setStatus('Dibatalkan.', 'warn');
+    else setStatus('<b>Gagal:</b> ' + esc(e.message), 'err');
   } finally {
     document.getElementById('dlBtn').disabled = false;
     document.getElementById('dlProgress').classList.remove('show');
@@ -772,26 +517,18 @@ function cancelDownload() {
   if (currentAbort) currentAbort.abort();
 }
 
-// ═══════════════════════════════════════════
-//  LIBRARY
-// ═══════════════════════════════════════════
-
+// ── library ──
 async function loadLibrary() {
   const all = await dbGetAll();
   all.sort((a, b) => b.createdAt - a.createdAt);
   videoCache = all;
   for (const v of videoCache) {
-    if (!objectUrls.has(v.id)) {
-      objectUrls.set(v.id, URL.createObjectURL(v.blob));
-    }
+    if (!objectUrls.has(v.id)) objectUrls.set(v.id, URL.createObjectURL(v.blob));
   }
 }
 
 async function renderLibrary() {
-  try {
-    await loadLibrary();
-  } catch (e) {
-    console.error('load error', e);
+  try { await loadLibrary(); } catch (e) {
     document.getElementById('libContent').innerHTML =
       '<div class="empty-state"><div class="icon">⚠️</div><h3>Error</h3><p>' + esc(e.message) + '</p></div>';
     return;
@@ -799,28 +536,15 @@ async function renderLibrary() {
 
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const filtered = q ? videoCache.filter(v => v.name.toLowerCase().includes(q)) : videoCache;
-
   document.getElementById('libCount').textContent = filtered.length + ' video' + (q ? ' (filter)' : '');
 
-  const container = document.getElementById('libContent');
-
+  const c = document.getElementById('libContent');
   if (videoCache.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📼</div>
-        <h3>Belum ada video</h3>
-        <p>Buka tab Download, paste link video, kasih nama, klik Ambil & Simpan.<br>Video bakal muncul di sini.</p>
-      </div>`;
+    c.innerHTML = '<div class="empty-state"><div class="icon">📼</div><h3>Belum ada video</h3><p>Buka tab Download, paste link, kasih nama, klik Ambil.</p></div>';
     return;
   }
-
   if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">🔍</div>
-        <h3>Gak ketemu</h3>
-        <p>Gak ada video dengan nama yang cocok dengan "${esc(q)}".</p>
-      </div>`;
+    c.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><h3>Gak ketemu</h3><p>Gak ada video dengan nama "' + esc(q) + '".</p></div>';
     return;
   }
 
@@ -836,37 +560,23 @@ async function renderLibrary() {
     thumb.className = 'thumb';
     const vid = document.createElement('video');
     vid.src = objectUrls.get(v.id);
-    vid.muted = true;
-    vid.playsInline = true;
-    vid.preload = 'metadata';
-    // seek ke 1 detik untuk thumbnail
+    vid.muted = true; vid.playsInline = true; vid.preload = 'metadata';
     vid.addEventListener('loadedmetadata', () => {
       try { vid.currentTime = Math.min(1, (vid.duration || 2) / 2); } catch (e) {}
     }, { once: true });
     thumb.appendChild(vid);
-
-    const playIcon = document.createElement('div');
-    playIcon.className = 'play-icon';
-    playIcon.textContent = '▶';
-    thumb.appendChild(playIcon);
+    const pi = document.createElement('div');
+    pi.className = 'play-icon'; pi.textContent = '▶';
+    thumb.appendChild(pi);
 
     const info = document.createElement('div');
     info.className = 'card-info';
-    info.innerHTML = `
-      <div class="card-title" title="${esc(v.name)}">${esc(v.name)}</div>
-      <div class="card-meta">
-        <span>${fmtBytes(v.size)}</span>
-        <span>${fmtDate(v.createdAt)}</span>
-      </div>`;
+    info.innerHTML = '<div class="card-title" title="' + esc(v.name) + '">' + esc(v.name) + '</div>' +
+      '<div class="card-meta"><span>' + fmtBytes(v.size) + '</span><span>' + fmtDate(v.createdAt) + '</span></div>';
 
     const del = document.createElement('button');
-    del.className = 'card-del';
-    del.textContent = '✕';
-    del.title = 'Hapus video';
-    del.onclick = (e) => {
-      e.stopPropagation();
-      deleteVideo(v.id, v.name);
-    };
+    del.className = 'card-del'; del.textContent = '✕';
+    del.onclick = (e) => { e.stopPropagation(); deleteVideo(v.id, v.name); };
 
     card.appendChild(thumb);
     card.appendChild(info);
@@ -874,35 +584,24 @@ async function renderLibrary() {
     grid.appendChild(card);
   }
 
-  container.innerHTML = '';
-  container.appendChild(grid);
+  c.innerHTML = '';
+  c.appendChild(grid);
 }
 
 async function deleteVideo(id, name) {
-  if (!confirm('Hapus "' + name + '" dari library?')) return;
-  try {
-    await dbDelete(id);
-    // revoke object url
-    const url = objectUrls.get(id);
-    if (url) { URL.revokeObjectURL(url); objectUrls.delete(id); }
-    toast('Dihapus', 'ok');
-    renderLibrary();
-    updateStorageInfo();
-  } catch (e) {
-    toast('Gagal hapus: ' + e.message, 'err');
-  }
+  if (!confirm('Hapus "' + name + '"?')) return;
+  await dbDelete(id);
+  const u = objectUrls.get(id);
+  if (u) { URL.revokeObjectURL(u); objectUrls.delete(id); }
+  toast('Dihapus', 'ok');
+  renderLibrary();
 }
-
-// ═══════════════════════════════════════════
-//  PLAYER
-// ═══════════════════════════════════════════
 
 function playVideo(id) {
   const v = videoCache.find(x => x.id === id);
   if (!v) return;
   const url = objectUrls.get(id) || URL.createObjectURL(v.blob);
   if (!objectUrls.has(id)) objectUrls.set(id, url);
-
   document.getElementById('playerTitle').textContent = v.name;
   const pv = document.getElementById('playerVideo');
   pv.src = url;
@@ -912,28 +611,18 @@ function playVideo(id) {
 
 function closePlayer() {
   const pv = document.getElementById('playerVideo');
-  pv.pause();
-  pv.removeAttribute('src');
-  pv.load();
+  pv.pause(); pv.removeAttribute('src'); pv.load();
   document.getElementById('playerModal').classList.remove('show');
 }
 
-// ═══════════════════════════════════════════
-//  BOOT
-// ═══════════════════════════════════════════
-
+// ── boot ──
 (async () => {
-  try {
-    db = await openDB();
-    await requestPersistent();
-    await updateStorageInfo();
-    // load awal biar tau ada berapa video
-    await loadLibrary();
-    document.getElementById('libCount').textContent = videoCache.length + ' video';
-  } catch (e) {
-    console.error('boot error', e);
-    toast('Init error: ' + e.message, 'err');
-  }
+  db = await openDB();
+  await requestPersistent();
+  await checkProxy();
+  setInterval(checkProxy, 10000);
+  await loadLibrary();
+  document.getElementById('libCount').textContent = videoCache.length + ' video';
 })();
 </script>
 
